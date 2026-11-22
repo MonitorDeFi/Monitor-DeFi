@@ -232,7 +232,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.2.3</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.2.4</span>
       <span class="hint" id="lastUpdate"></span>
       <button class="ghost theme-btn" id="refreshBtn" title="Atualizar cotações, gráfico BTC e posições">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
@@ -298,6 +298,9 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${a
    HISTÓRICO DE VERSÕES  (a cada mudança: atualizar APP_VERSION aqui E o selo #appVersion no HTML)
    Regra: correção = +0.0.1 · funcionalidade/mudança de UX = +0.1.0 · mudança incompatível = +1.0.0
 
+   v1.2.4  Corrige patrimônio total: aTokens da Aave, tokens de dívida e cotas de vault Morpho
+           deixam de ser somados também em "Em carteira" (dupla contagem / dívida contada
+           como ativo); tile, scan e chips passam a ignorar o mesmo token oculto da tabela.
    v1.2.3  Preparação para publicação: aviso legal no rodapé e meta tags de compartilhamento
            (Open Graph/Twitter) com título, descrição e idioma.
    v1.2.2  O gráfico do TradingView permanece aberto ao adicionar endereço e buscar
@@ -311,7 +314,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${a
            foco visível, h1/main, aria-live, aria-labels, caption/scope nas tabelas.
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v1.2.3';
+const APP_VERSION = 'v1.2.4';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -375,6 +378,8 @@ const rowAmt = r => +rowObj(r).amount.value;
 const rowP = r => effPrice(r.currency.symbol, rowObj(r).usdPerToken);
 const rowUsd = r => rowAmt(r)*rowP(r);
 const holdUsd = h => h.amt*effPrice(h.usym, h.priceNow);
+// Token ocultado na tabela de saldos ("BTC" na Base). Fica fora de TODOS os totais para tile, tabela e chips baterem.
+const hiddenHold = h => h.chainId === 8453 && String(h.sym || h.usym || '').trim().toUpperCase() === 'BTC';
 
 // fetch com timeout. Alguns ambientes (iframes/previews que repassam o fetch por postMessage)
 // não conseguem clonar um AbortSignal e lançam DataCloneError; nesse caso usamos só Promise.race.
@@ -837,6 +842,26 @@ async function rpcBatch(cid, reqs){
   return null;
 }
 
+// Endereços cujo valor JÁ está contado em Aave/Morpho (aToken, vToken e cotas de vault).
+// Se aparecerem também como token de carteira, seriam somados duas vezes (e tokens de dívida entrariam como ativo).
+function accountedKeys(w){
+  const s = new Set();
+  for(const m of (w.markets||[])) for(const r of (m.reserves||[])){
+    if(r.aToken && r.aToken.address) s.add(m.chain.chainId+'|'+String(r.aToken.address).toLowerCase());
+    if(r.vToken && r.vToken.address) s.add(m.chain.chainId+'|'+String(r.vToken.address).toLowerCase());
+  }
+  for(const mo of (w.morpho||[])) if(mo.type==='vault' && mo.key) s.add(mo.chainId+'|'+String(mo.key).toLowerCase());
+  return s;
+}
+function pruneAccounted(w){
+  const acc = accountedKeys(w);
+  w.hold = w.hold.filter(h=>{
+    if(h.kind!=='w' || h.isNative || h.addr==='native') return true;
+    if(acc.has(h.chainId+'|'+String(h.addr||'').toLowerCase())) return false;
+    if(/^(variable|stable)debt/i.test(String(h.sym||''))) return false;
+    return true;
+  });
+}
 async function fetchHoldings(w){
   w.hold=[]; w.holdFail=[]; w.v3hold=[];
   const nativeMap = await fetchNativeBalancesEvm(w, EVM_ALL_CHAINS);
@@ -909,6 +934,7 @@ async function fetchHoldings(w){
       }
     })
   ]);
+  pruneAccounted(w);
   await refreshHoldPrices([w]);
   w.hold = w.hold.filter(h => h.priceNow > 0 || isWbtc(h.usym) || (EVM_ALL_CHAINS.includes(h.chainId) && h.amt>0));
   {
@@ -1166,7 +1192,7 @@ function scanCard(){
     const aave = w.supplies.filter(r=>rows(r)&&!r.morpho).reduce((a,r)=>a+rowUsd(r),0) - w.borrows.filter(r=>rows(r)&&!r.morpho).reduce((a,r)=>a+rowUsd(r),0);
     const morpho = w.supplies.filter(r=>rows(r)&&r.morpho).reduce((a,r)=>a+rowUsd(r),0) - w.borrows.filter(r=>rows(r)&&r.morpho).reduce((a,r)=>a+rowUsd(r),0);
     const hs = w.hold.filter(h=>h.chainId===cid);
-    const wal = hs.filter(h=>h.kind==='w').reduce((a,h)=>a+holdUsd(h),0);
+    const wal = hs.filter(h=>h.kind==='w' && !hiddenHold(h)).reduce((a,h)=>a+holdUsd(h),0);
     const parts = [];
     if(Math.abs(aave)>=0.5) parts.push(`Aave ${fmtUsd(aave,0)}`);
     if(Math.abs(morpho)>=0.5) parts.push(`Morpho ${fmtUsd(morpho,0)}`);
@@ -1189,7 +1215,7 @@ function holdingsCard(){
   const loaded = STATE.wallets.some(w=>w.hold.length||w.holdFail.length);
   if(!loaded) return `<div class="card" id="holdCard"><h2>Carteira</h2><div class="empty">Carregando…</div></div>`;
   const multi = onWallets().length>1;
-  const baseFiltered = hold.filter(h => !(h.chainId === 8453 && String(h.sym || h.usym || '').trim().toUpperCase() === 'BTC'));
+  const baseFiltered = hold.filter(h => !hiddenHold(h));
   const big = baseFiltered.filter(h=>holdUsd(h)>=SMALL_WALLET);
   const hiddenCount = baseFiltered.length - big.length;
   const rowsToShow = HIDE_SMALL_WALLET ? big : baseFiltered;
@@ -1469,7 +1495,7 @@ function renderAll(){
       S:allS.reduce((a,x)=>a+x.usd,0),
       D:allB.reduce((a,x)=>a+x.usd,0),
       E:netApy(allS,allB).earn,
-      wal:hold.filter(h=>h.kind==='w').reduce((a,h)=>a+holdUsd(h),0)
+      wal:hold.filter(h=>h.kind==='w' && !hiddenHold(h)).reduce((a,h)=>a+holdUsd(h),0)
     };
   }else{
     TILE_BASE = null;
@@ -1520,7 +1546,7 @@ function walletValue(w){
   let v = 0;
   for(const r of w.supplies) v += rowUsd(r);
   for(const r of w.borrows) v -= rowUsd(r);
-  for(const h of w.hold) v += holdUsd(h);
+  for(const h of w.hold) if(!hiddenHold(h)) v += holdUsd(h);
   return v;
 }
 function renderWallets(){
