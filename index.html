@@ -160,6 +160,7 @@ details.card[open] > summary{margin-bottom:10px}
 .fxline{flex-basis:100%;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:8px;margin-top:2px}
 .fxline b{font-size:15px;font-variant-numeric:tabular-nums}
 .ctrl label{font-size:12px;color:var(--text-2);font-weight:600}
+.ctrl select{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font:600 13px Inter,Segoe UI,sans-serif;cursor:pointer}
 .ctrl input{width:150px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font:600 14px var(--mono)}
 .ctrl input.set{border-color:var(--warn)}
 .simtbl input.qty{width:140px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font:13px var(--mono);text-align:right}
@@ -195,7 +196,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
   .tvbox:not(.locked)+.tvunlock{display:inline-flex;align-items:center;margin-top:8px}
 }
 @media (max-width:600px){
-  .search input,.ctrl input,.swap input,.swap select{font-size:16px}
+  .search input,.ctrl input,.ctrl select,.swap input,.swap select{font-size:16px}
 }
 </style>
 </head>
@@ -232,7 +233,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.3.4</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.4.4</span>
       <span class="hint" id="lastUpdate"></span>
       <button class="ghost theme-btn" id="refreshBtn" title="Atualizar somente posições e saldo em carteira">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
@@ -250,7 +251,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
   </div>
   <div class="wlist" id="wlist"></div>
   <div class="ctrl">
-    <label for="wbtc">Preço do BTC (US$)</label>
+    <label for="wbtc" id="simAssetLbl">Preço do BTC (US$)</label>
     <span class="qcell"><button class="undo" id="wbtcClear" title="Voltar ao preço ao vivo" aria-label="Voltar ao preço ao vivo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><input id="wbtc" inputmode="decimal" placeholder="automático" autocomplete="off"></span>
     <span class="hint" id="wbtcHint">Vale para todas as redes. Vazio = preço de mercado.</span>
     <div class="fxline" id="fxLine"></div>
@@ -259,7 +260,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
 
   <!-- Card do gráfico fora de #out: nunca é recriado por buscas/re-renders, então o TradingView permanece aberto -->
   <div class="card" id="btcCard">
-    <div class="mkt-head"><h2>BTC/USD · TradingView</h2><span class="hint" id="btcNowTxt"></span></div>
+    <div class="mkt-head"><h2 id="tvTitle">BTC/USD · TradingView</h2><span class="hint" id="btcNowTxt"></span></div>
     <div class="liq-alert" id="liqAlertBox"></div>
     <div class="tvbox locked" id="tvBox"><div class="chartbox" id="tvWrap"><div id="tvContainer" style="width:100%;height:100%"></div></div><button type="button" class="tvlock" id="tvLock">Toque para interagir com o gráfico</button></div><button type="button" class="ghost tvunlock" id="tvUnlock">Voltar a rolar a página</button>
   </div>
@@ -295,9 +296,18 @@ const setStatus = t => { const el = $('#status'); if(el) el.textContent = t; };
 const sameAddr = (a,b)=>!!a&&!!b&&a.toLowerCase()===b.toLowerCase();
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${addr}` : null;
 /* ---------------------------------------------------------------------------
-   HISTÓRICO DE VERSÕES  (a cada mudança: atualizar APP_VERSION aqui E o selo #appVersion no HTML)
-   Regra: correção = +0.0.1 · funcionalidade/mudança de UX = +0.1.0 · mudança incompatível = +1.0.0
-
+   v1.4.4  TradingView troca automaticamente para o ativo em risco de liquidação após
+           carregar uma carteira com alerta ativo, mantendo BTC/USD na tela inicial.
+   v1.4.3  Remove o seletor manual de ativo na barra de preço: o ativo exibido é definido
+           automaticamente como BTC por padrão ou trocado automaticamente para o ativo em
+           risco de liquidação. Remove marcadores residuais do topo/rodapé.
+   v1.4.2  Corrige SyntaxError (redeclaração de MANUAL_WBTC e blocos cortados), restaura
+           funções auxiliares (fetchT, gql, pool, bsGet, rowUsd, holdUsd) e cabeçalho de
+           marketCard, remove referências residuais em renderLiqAlert e limpa marcadores soltos.
+   v1.4.1  Corrige marcações residuais no início/fim do HTML, corrige cálculo NaN no simulador
+           sem dívida (Infinity - Infinity) e adiciona seletor de ativo na barra de preço com
+           prioridade para BTC e troca automática para o ativo em risco de liquidação.
+   v1.3.5  Altera o rótulo dos alertas de liquidação para "(Aave, Morpho, Venus)".
    v1.3.4  Corrige os Alertas de Liquidação (Aave, Morpho & Venus): passa a monitorar todas as
            posições com dívida (BTC e variantes como BTC.b, outros colaterais voláteis como ETH/BNB
            e colateral misto via queda correlacionada + Health Factor), melhora a cópia do valor
@@ -340,7 +350,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${a
            foco visível, h1/main, aria-live, aria-labels, caption/scope nas tabelas.
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v1.3.4';
+const APP_VERSION = 'v1.4.4';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -383,6 +393,10 @@ function valBlock(usd, btc){
 }
 
 let MANUAL_WBTC = null;
+let SIM_ASSET = 'BTC';
+let MANUAL_PRICES = {};
+let LIVE_PRICES = {};
+let LIVE_META = {};
 const isWbtc = sym => /^(W?BTC|CBBTC|TBTC|LBTC|BTCB|XBTC|SBTC|KBTC|VBTC|SOLVBTC|UNIBTC|PUMPBTC|FBTC|EBTC)(\.[EB])?$/i.test(String(sym||'').trim());
 const PURE_STABLE = /^(USDC|USDT|DAI|GHO|USDS|USDBC|PYUSD|LUSD|FRAX|EURC|FDUSD|TUSD)(\.E)?$/i;
 const isPureStable = sym => {
@@ -391,64 +405,118 @@ const isPureStable = sym => {
   return PURE_STABLE.test(u);
 };
 let LIVE_WBTC = null, LIVE_SRC = '', LIVE_TS = 0;
-const effPrice = (sym, p) => isWbtc(sym) && (MANUAL_WBTC||LIVE_WBTC) ? (MANUAL_WBTC||LIVE_WBTC) : (+p||0);
-function parseNum(s){ s=(s||'').trim().replace(/[^\d.,]/g,''); if(!s) return null; if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,''); const v=parseFloat(s); return v>0?v:null; }
-function marketWbtc(){
-  for(const w of (STATE?.wallets||[])) for(const m of w.markets) for(const r of m.reserves) if(isWbtc(r.underlyingToken.symbol) && +r.usdExchangeRate>0) return +r.usdExchangeRate;
+function assetGroupOf(sym, p){
+  if(isWbtc(sym)) return 'BTC';
+  if(/^(W?ETH|STETH|WSTETH|WEETH|EETH|RSETH|WRSETH|EZETH|CBETH|RETH|OSETH|ETHX|METH|CMETH|RSWETH|TETH|ETH\.E|WETH\.E)$/i.test(String(sym||''))) return 'ETH';
+  const u = String(sym||'').trim().toUpperCase().replace(/\.E$/,'');
+  if(isPureStable(u) && (!p || (p>0.9 && p<1.25))) return null;
+  if(/^(W?BNB|SLISBNB)$/.test(u)) return 'BNB';
+  if(/^(W?AVAX|SAVAX)$/.test(u)) return 'AVAX';
+  if(/^(W?POL|W?MATIC)$/.test(u)) return 'POL';
+  if(/^(W?SOL|JLP|MSOL|JITOSOL)$/.test(u)) return 'SOL';
+  return u || null;
+}
+function marketPriceOf(group){
+  const g = String(group || 'BTC').toUpperCase();
+  for(const w of (STATE?.wallets||[])){
+    for(const m of (w.markets||[])){
+      for(const r of (m.reserves||[])){
+        const sym = r.underlyingToken?.symbol || '';
+        const px = +r.usdExchangeRate || 0;
+        if(px > 0 && assetGroupOf(sym, px) === g){
+          if(g === 'ETH' && !/^W?ETH(\.E)?$/i.test(sym)) continue;
+          return px;
+        }
+      }
+    }
+    for(const h of (w.hold||[])){
+      if(h.priceNow > 0 && assetGroupOf(h.usym || h.sym, h.priceNow) === g){
+        if(g === 'ETH' && !/^W?ETH(\.E)?$/i.test(h.usym || h.sym)) continue;
+        return h.priceNow;
+      }
+    }
+  }
   return 0;
 }
-const btcNow = () => MANUAL_WBTC || LIVE_WBTC || marketWbtc();
+function effPrice(sym, p){
+  const base = +p || 0;
+  const g = assetGroupOf(sym, base);
+  if(g && MANUAL_PRICES[g] > 0){
+    if(g === 'ETH' && !/^W?ETH(\.E)?$/i.test(String(sym||'')) && base > 0){
+      const refEth = LIVE_PRICES.ETH || marketPriceOf('ETH');
+      if(refEth > 0) return base * (MANUAL_PRICES.ETH / refEth);
+    }
+    return MANUAL_PRICES[g];
+  }
+  if(g === 'BTC' && (MANUAL_WBTC || LIVE_WBTC)) return MANUAL_WBTC || LIVE_WBTC;
+  return base;
+}
+function parseNum(s){ s=(s||'').trim().replace(/[^\d.,]/g,''); if(!s) return null; if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,''); const v=parseFloat(s); return v>0?v:null; }
+function marketWbtc(){ return marketPriceOf('BTC'); }
+const btcNow = () => MANUAL_PRICES.BTC || MANUAL_WBTC || LIVE_PRICES.BTC || LIVE_WBTC || marketWbtc();
 
-const rowObj = r => r.balance || r.debt;
-const rowAmt = r => +rowObj(r).amount.value;
-const rowP = r => effPrice(r.currency.symbol, rowObj(r).usdPerToken);
-const rowUsd = r => rowAmt(r)*rowP(r);
-const holdUsd = h => h.amt * (h.priceNow > 0 ? effPrice(h.usym, h.priceNow) : 0);
-// Token ocultado na tabela de saldos ("BTC" na Base). Fica fora de TODOS os totais para tile, tabela e chips baterem.
-const hiddenHold = h => h.chainId === 8453 && String(h.sym || h.usym || '').trim().toUpperCase() === 'BTC';
+const rowAmt = r => +(r?.balance ? r.balance.amount?.value : r?.debt?.amount?.value) || 0;
+const rowP = r => effPrice(r?.currency?.symbol, +(r?.balance ? r.balance.usdPerToken : r?.debt?.usdPerToken) || 0);
+const rowUsd = r => rowAmt(r) * rowP(r);
+const holdUsd = h => (h?.amt || 0) * (h?.priceNow > 0 ? effPrice(h.usym || h.sym, h.priceNow) : 0);
+const hiddenHold = h => !h || h.kind !== 'w' || !(h.priceNow > 0);
 
-// fetch com timeout. Alguns ambientes (iframes/previews que repassam o fetch por postMessage)
-// não conseguem clonar um AbortSignal e lançam DataCloneError; nesse caso usamos só Promise.race.
-let FETCH_NO_SIGNAL = false;
-async function fetchT(url, opts={}, ms=8000){
-  const race = () => Promise.race([fetch(url, opts), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
-  if(FETCH_NO_SIGNAL) return race();
+async function fetchT(url, opts={}, ms=10000){
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const id = ctrl ? setTimeout(()=>ctrl.abort(), ms) : null;
   try{
-    const ac = new AbortController();
-    setTimeout(()=>ac.abort(), ms);
-    return await fetch(url, {...opts, signal: ac.signal});
+    return await fetch(url, ctrl ? {...opts, signal: ctrl.signal} : opts);
   }catch(e){
-    if(/DataCloneError/.test(String(e && (e.name+' '+e.message)))){ FETCH_NO_SIGNAL = true; return race(); }
+    if(e && e.name === 'DataCloneError'){
+      return await Promise.race([
+        fetch(url, opts),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))
+      ]);
+    }
     throw e;
+  }finally{
+    if(id) clearTimeout(id);
   }
 }
-async function gql(query, variables={}, tries=3){
-  for(let i=0;i<tries;i++){
+
+async function gql(query, variables={}){
+  for(let i=0;i<2;i++){
     try{
-      const r = await fetchT(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query,variables})},12000);
+      const r = await fetchT(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query,variables})},10000);
       const j = await r.json();
       if(j.errors) throw new Error(j.errors.map(e=>e.message).join('; '));
       return j.data;
-    }catch(e){ if(i===tries-1) throw e; await new Promise(r=>setTimeout(r,400*(i+1))); }
+    }catch(e){ if(i===1) throw e; await new Promise(r=>setTimeout(r,400*(i+1))); }
   }
 }
-async function pool(items, n, fn){
-  const out = new Array(items.length); let k=0;
-  await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{ while(k<items.length){ const i=k++; out[i]=await fn(items[i],i); } }));
+
+async function pool(items, limit, fn){
+  const out = new Array(items.length);
+  let idx = 0;
+  const workers = Array.from({length: Math.min(limit, items.length)}, async ()=>{
+    while(idx < items.length){
+      const i = idx++;
+      out[i] = await fn(items[i], i);
+    }
+  });
+  await Promise.all(workers);
   return out;
 }
+
 const BS_CACHE = new Map();
 async function bsGet(host, path, params={}){
-  const url = `https://${host}/api/v2${path}?${new URLSearchParams(params)}`;
+  const qs = new URLSearchParams(params).toString();
+  const url = `https://${host}/api/v2${path}${qs ? '?' + qs : ''}`;
   if(BS_CACHE.has(url)) return BS_CACHE.get(url);
-  for(let tr=0; tr<2; tr++){
-    let r;
-    try{ r = await fetchT(url, {},8000); }
-    catch(e){ await new Promise(s=>setTimeout(s,400*(tr+1))); continue; }
-    if(r.status===429 || r.status>=500){ await new Promise(s=>setTimeout(s,500*(tr+1))); continue; }
-    if(r.status===404){ BS_CACHE.set(url,null); return null; }
-    if(!r.ok) throw new Error(`${host} HTTP ${r.status}`);
-    const j = await r.json(); BS_CACHE.set(url,j); return j;
+  for(let i=0;i<2;i++){
+    try{
+      const r = await fetchT(url, {cache:'no-store'}, 7500);
+      if(r.status === 404) return null;
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      BS_CACHE.set(url, j);
+      return j;
+    }catch(e){ if(i===1) throw new Error(`${host} indisponível`); await new Promise(r=>setTimeout(r,350*(i+1))); }
   }
   throw new Error(`${host} indisponível`);
 }
@@ -1427,10 +1495,13 @@ function updateTiles(){
 }
 
 function assetCell(cur, cid){ return `<div class="asset">${tokIcon(cur.imageUrl, cur.symbol, cid, cur.address)}${esc(cur.symbol)}</div>`; }
-const wbtcMark = sym => MANUAL_WBTC && isWbtc(sym) ? ' <span class="pill" title="preço manual">manual</span>' : '';
+const wbtcMark = sym => {
+  const g = assetGroupOf(sym, 1);
+  return g && MANUAL_PRICES[g] > 0 ? ' <span class="pill" title="preço manual">manual</span>' : '';
+};
 
-function marketCard({w,m,ms,mb,view},i){
-  const us=m.userState||{ltv:{value:'0'},currentLiquidationThreshold:{value:'0'},eModeEnabled:false};
+function marketCard({w,m,ms,mb,view}, i){
+  const us = m.userState || {};
   const multi=onWallets().length>1;
   const na = netApy(supItems(ms), borItems(mb));
   const protoLabel = m.protocol==='morpho' ? 'Morpho' : m.protocol==='venus' ? m.name : m.name.replace(/^AaveV3/,'Aave v3 ');
@@ -1503,6 +1574,60 @@ function holdingsCard(){
 let TV_ACTIVE = false;
 let tvWidgetInstance = null;
 let tvMounting = false;
+const TV_SYMBOL_MAP = {
+  BTC:'COINBASE:BTCUSD', ETH:'COINBASE:ETHUSD', BNB:'BINANCE:BNBUSDT',
+  AVAX:'COINBASE:AVAXUSD', POL:'BINANCE:POLUSDT', SOL:'COINBASE:SOLUSD',
+  LINK:'COINBASE:LINKUSD', AAVE:'COINBASE:AAVEUSD', UNI:'COINBASE:UNIUSD',
+  ARB:'BINANCE:ARBUSDT', OP:'BINANCE:OPUSDT', S:'BINANCE:SUSDT',
+  MNT:'BYBIT:MNTUSDT', XVS:'BINANCE:XVSUSDT', CAKE:'BINANCE:CAKEUSDT',
+  DOGE:'COINBASE:DOGEUSD', XRP:'COINBASE:XRPUSD', LTC:'COINBASE:LTCUSD',
+  ADA:'COINBASE:ADAUSD', DOT:'COINBASE:DOTUSD', PENDLE:'BINANCE:PENDLEUSDT',
+  ENA:'BINANCE:ENAUSDT', CRV:'BINANCE:CRVUSDT', LDO:'BINANCE:LDOUSDT',
+  MKR:'COINBASE:MKRUSD', AERO:'COINBASE:AEROUSD'
+};
+function tvAssetActive(){
+  return STATE ? (SIM_ASSET || 'BTC') : 'BTC';
+}
+function tvSymbolFor(asset){
+  const g = String(asset || 'BTC').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!g) return 'COINBASE:BTCUSD';
+  return TV_SYMBOL_MAP[g] || `BINANCE:${g}USDT`;
+}
+function syncSimAssetFromLiq(liqs){
+  const riskAssets = STATE ? [...new Set((liqs||[]).map(l => l.asset).filter(Boolean))] : [];
+  const target = riskAssets.length ? riskAssets[0] : 'BTC';
+  const changed = SIM_ASSET !== target;
+  SIM_ASSET = target;
+  const lbl = $('#simAssetLbl');
+  if(lbl) lbl.textContent = `Preço do ${SIM_ASSET} (US$)`;
+  if(changed){
+    syncPriceInputForAsset();
+    updateTvHeader();
+    const sym = tvSymbolFor(tvAssetActive());
+    if(lastTvSymbol && lastTvSymbol !== sym){
+      const container = document.getElementById('tvContainer');
+      if(container) container.innerHTML = '';
+      tvMounting = false;
+      mountTradingViewWidget();
+    }
+  }
+  if(!LIVE_PRICES[SIM_ASSET] && !MANUAL_PRICES[SIM_ASSET]) fetchLiveForAsset(SIM_ASSET);
+}
+function updateTvHeader(){
+  const asset = tvAssetActive();
+  const titleEl = $('#tvTitle');
+  if(titleEl){
+    const riskTag = (STATE && asset !== 'BTC') ? ' <span class="pill" style="border-color:var(--warn);color:var(--warn)">risco liq.</span>' : '';
+    titleEl.innerHTML = `${esc(asset)}/USD · TradingView${riskTag}`;
+  }
+  const nowEl = $('#btcNowTxt');
+  if(nowEl){
+    const px = MANUAL_PRICES[asset] || LIVE_PRICES[asset] || marketPriceOf(asset) || (asset === 'BTC' ? btcNow() : 0);
+    const src = (LIVE_META[asset]?.src) || (asset === 'BTC' ? LIVE_SRC : '');
+    nowEl.innerHTML = px ? `${esc(asset)} ao vivo: <b>${fmtUsd(px, px<10?4:2)}</b>${src?' ('+esc(src)+')':''}` : '';
+  }
+}
+
 function renderLiqAlert(){
   const box = $('#liqAlertBox');
   if(!box) return;
@@ -1511,10 +1636,11 @@ function renderLiqAlert(){
     const db = b.dropRatio != null ? b.dropRatio : (b.hf != null && isFinite(b.hf) ? (b.hf - 1) : 999);
     return da - db;
   });
+  syncSimAssetFromLiq(liqs);
   if(!liqs.length){
     box.className = 'liq-alert';
     box.innerHTML = `<div class="liq-alert-head">
-      <div class="row"><span class="liq-status-pill">● Monitoramento ativo</span><b>Alertas de Liquidação (Aave, Morpho &amp; Venus)</b></div>
+      <div class="row"><span class="liq-status-pill">● Monitoramento ativo</span><b>Alertas de Liquidação (Aave, Morpho, Venus)</b></div>
       <span class="hint">Nenhuma posição com dívida ativa no momento.</span>
     </div>`;
     return;
@@ -1564,7 +1690,7 @@ function renderLiqAlert(){
 
   box.className = `liq-alert ${bannerLvl}`;
   box.innerHTML = `<div class="liq-alert-head">
-    <div class="row"><span class="liq-status-pill">${statusTxt}</span><b>Alertas de Liquidação (Aave, Morpho &amp; Venus)</b></div>
+    <div class="row"><span class="liq-status-pill">${statusTxt}</span><b>Alertas de Liquidação (Aave, Morpho, Venus)</b></div>
     <span class="hint">${msgTxt} Dica: clique em <b>Copiar</b> e use a linha horizontal no TradingView.</span>
   </div>
   <div class="liq-badges">${badges}</div>`;
@@ -1597,13 +1723,15 @@ function renderLiqAlert(){
 function mountTradingViewWidget(){
   const container = document.getElementById('tvContainer');
   if(!container || tvMounting) return;
-  if(container.querySelector('iframe') && lastTvTheme === THEME) return;
   const targetTheme = THEME;
+  const targetAsset = tvAssetActive();
+  const targetSymbol = tvSymbolFor(targetAsset);
+  if(container.querySelector('iframe') && lastTvTheme === targetTheme && lastTvSymbol === targetSymbol) return;
   tvMounting = true;
   try{
     const cfg = {
       autosize: true,
-      symbol: 'COINBASE:BTCUSD',
+      symbol: targetSymbol,
       interval: '60',
       timezone: 'America/Sao_Paulo',
       theme: targetTheme === 'light' ? 'light' : 'dark',
@@ -1618,13 +1746,14 @@ function mountTradingViewWidget(){
     container.innerHTML = '';
     const iframe = document.createElement('iframe');
     iframe.src = src;
-    iframe.title = 'TradingView BTC/USD';
+    iframe.title = `TradingView ${targetAsset}/USD`;
     iframe.style.cssText = 'width:100%;height:100%;border:0;display:block;';
     iframe.setAttribute('allowtransparency', 'true');
     iframe.setAttribute('scrolling', 'no');
     iframe.setAttribute('allow', 'clipboard-write; fullscreen');
     iframe.onload = () => {
       lastTvTheme = targetTheme;
+      lastTvSymbol = targetSymbol;
       tvMounting = false;
     };
     iframe.onerror = () => {
@@ -1633,6 +1762,7 @@ function mountTradingViewWidget(){
     tvWidgetInstance = iframe;
     container.appendChild(iframe);
     lastTvTheme = targetTheme;
+    lastTvSymbol = targetSymbol;
     setTimeout(() => { tvMounting = false; }, 1200);
   }catch(e){
     console.warn('tv widget', e);
@@ -1641,14 +1771,14 @@ function mountTradingViewWidget(){
 }
 
 let lastTvTheme = null;
+let lastTvSymbol = null;
 function loadBtc(force){
-  const now = btcNow();
-  const nowEl = $('#btcNowTxt');
-  if(nowEl) nowEl.innerHTML = now ? `BTC ao vivo: <b>${fmtUsd(now,2)}</b>${LIVE_SRC?' ('+LIVE_SRC+')':''}` : '';
   renderLiqAlert();
+  updateTvHeader();
+  const targetSymbol = tvSymbolFor(tvAssetActive());
   const container = document.getElementById('tvContainer');
   const hasFrame = !!(container && container.querySelector('iframe'));
-  if(force && lastTvTheme !== THEME){
+  if((force && lastTvTheme !== THEME) || (hasFrame && lastTvSymbol !== targetSymbol)){
     if(container) container.innerHTML = '';
     tvMounting = false;
     mountTradingViewWidget();
@@ -1784,7 +1914,8 @@ function setupSim(c,i){
       return `<div><div class="l">Liquidação</div><div class="v">—</div></div>`;
     };
     const us=m.userState||{ltv:{value:'0'},currentLiquidationThreshold:{value:'0'}};
-    const chg = Math.abs(r.net-r0.net)+Math.abs(r.debt-r0.debt)+Math.abs((r.hf||0)-(r0.hf||0))>0.005;
+    const hfDiff = (isFinite(r.hf) && isFinite(r0.hf)) ? Math.abs(r.hf - r0.hf) : (r.hf === r0.hf ? 0 : 1);
+    const chg = Math.abs(r.net-r0.net)+Math.abs(r.debt-r0.debt)+hfDiff>0.005;
     const tag = chg ? ' <span class="pill" style="border-color:var(--warn);color:var(--warn)">simulado</span>' : '';
     const C = coll().reduce((a,x)=>a+usd(x),0);
     const msEl = document.getElementById('ms'+i);
@@ -2013,7 +2144,10 @@ function go(){
   if($('#addr').value.trim()){ const ok = addWallet(); if(!ok && !parseAddrs($('#addr').value).length && !WALLETS.length){ setStatus('Endereço inválido — use o formato 0x seguido de 40 caracteres.'); return; } }
   const addrs = WALLETS.map(w=>w.addr);
   if(!addrs.length){ setStatus('Adicione pelo menos uma carteira.'); return; }
-  SIM_Q = {}; SIM_ADD = {}; SW_FORM = {}; SWAPS = {}; MANUAL_WBTC = null; $('#wbtc').classList.remove('set'); $('#wbtcHint').textContent='Atualizando preço…';
+  SIM_Q = {}; SIM_ADD = {}; SW_FORM = {}; SWAPS = {};
+  MANUAL_PRICES = {}; MANUAL_WBTC = null; SIM_ASSET = 'BTC';
+  if($('#simAssetLbl')) $('#simAssetLbl').textContent = 'Preço do BTC (US$)';
+  $('#wbtc').classList.remove('set'); $('#wbtcHint').textContent='Atualizando preço…';
   BS_CACHE.clear();
   liveTick(true);
   loadAll(addrs);
@@ -2035,19 +2169,51 @@ async function manualRefresh(){
 }
 
 const fmtPrice = v => v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-async function fetchLiveWbtc(){
-  try{ const j = await (await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot',{cache:'no-store'})).json(); const v=+j.data.amount; if(v>0) return {v, src:'Coinbase'}; }catch(e){}
-  try{ const j = await (await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT',{cache:'no-store'})).json(); const v=+j.price; if(v>0) return {v, src:'Binance'}; }catch(e){}
+async function fetchLiveSpot(sym){
+  const s = String(sym || 'BTC').toUpperCase();
+  try{ const j = await (await fetchT(`https://api.coinbase.com/v2/prices/${encodeURIComponent(s)}-USD/spot`,{cache:'no-store'},5000)).json(); const v=+j?.data?.amount; if(v>0) return {v, src:'Coinbase'}; }catch(e){}
+  try{ const j = await (await fetchT(`https://api.binance.com/api/v3/ticker/price?symbol=${encodeURIComponent(s)}USDT`,{cache:'no-store'},5000)).json(); const v=+j?.price; if(v>0) return {v, src:'Binance'}; }catch(e){}
   return null;
 }
+async function fetchLiveWbtc(){ return fetchLiveSpot('BTC'); }
+async function fetchLiveForAsset(asset){
+  const g = String(asset || 'BTC').toUpperCase();
+  const r = await fetchLiveSpot(g);
+  if(!r) return;
+  LIVE_PRICES[g] = r.v;
+  LIVE_META[g] = {src:r.src, ts:Date.now()};
+  if(g === 'BTC'){ LIVE_WBTC = r.v; LIVE_SRC = r.src; LIVE_TS = LIVE_META[g].ts; }
+  if(SIM_ASSET === g){
+    syncPriceInputForAsset();
+    updateTvHeader();
+  }
+}
+function syncPriceInputForAsset(){
+  const g = SIM_ASSET || 'BTC';
+  const man = MANUAL_PRICES[g] || null;
+  const live = LIVE_PRICES[g] || marketPriceOf(g);
+  const inp = $('#wbtc');
+  if(inp){
+    inp.classList.toggle('set', !!man);
+    if(document.activeElement !== inp){
+      inp.value = man ? fmtPrice(man) : (live ? fmtPrice(live) : '');
+    }
+  }
+  wbtcHint();
+}
 function wbtcHint(){
-  $('#wbtcClear').classList.toggle('on', !!MANUAL_WBTC);
-  const mk = marketWbtc(), t = LIVE_TS ? new Date(LIVE_TS).toLocaleTimeString('pt-BR') : '';
-  const orc = mk ? ` · oráculo Aave: ${fmtUsd(mk,0)}` : '';
-  $('#wbtcHint').innerHTML = MANUAL_WBTC
-    ? `Preço manual em todas as redes. Ao vivo: ${LIVE_WBTC?fmtUsd(LIVE_WBTC,2):'—'}${orc}.`
-    : LIVE_WBTC ? `<span style="color:var(--good)">●</span> ${LIVE_SRC} · ${t}${orc}. Edite para simular.`
-    : `Preço do oráculo da Aave${mk?` (${fmtUsd(mk,2)})`:''}.`;
+  const g = SIM_ASSET || 'BTC';
+  const man = MANUAL_PRICES[g] || null;
+  const live = LIVE_PRICES[g] || null;
+  const meta = LIVE_META[g] || {};
+  $('#wbtcClear').classList.toggle('on', !!man);
+  const mk = marketPriceOf(g), t = meta.ts ? new Date(meta.ts).toLocaleTimeString('pt-BR') : '';
+  const orc = mk ? ` · mercado: ${fmtUsd(mk, mk<10?2:0)}` : '';
+  const autoTag = (g !== 'BTC') ? ` <span class="pill" style="border-color:var(--warn);color:var(--warn)">em risco de liquidação</span>` : '';
+  $('#wbtcHint').innerHTML = man
+    ? `Preço manual de <b>${esc(g)}</b> em todas as redes. Ao vivo: ${live?fmtUsd(live,2):'—'}${orc}.${autoTag}`
+    : live ? `<span style="color:var(--good)">●</span> ${esc(g)} ${esc(meta.src||'')} · ${t}${orc}. Edite para simular.${autoTag}`
+    : `Preço de mercado de <b>${esc(g)}</b>${mk?` (${fmtUsd(mk,2)})`:''}. Edite para simular.${autoTag}`;
 }
 let liveBusy = false;
 async function liveTick(force){
@@ -2056,27 +2222,27 @@ async function liveTick(force){
     const r = await fetchLiveWbtc(); if(!r) return;
     const changed = Math.abs(r.v-(LIVE_WBTC||0))>0.005;
     LIVE_WBTC = r.v; LIVE_SRC = r.src; LIVE_TS = Date.now();
-    if(!MANUAL_WBTC && document.activeElement!==$('#wbtc')) $('#wbtc').value = fmtPrice(LIVE_WBTC);
+    LIVE_PRICES.BTC = r.v; LIVE_META.BTC = {src:r.src, ts:LIVE_TS};
+    if(SIM_ASSET === 'BTC' && !MANUAL_PRICES.BTC && document.activeElement!==$('#wbtc')) $('#wbtc').value = fmtPrice(LIVE_WBTC);
     wbtcHint();
     const typing = document.activeElement && document.activeElement.matches && document.activeElement.matches('#out input, #out select');
-    if(STATE && !MANUAL_WBTC && (changed||force) && !typing){ renderAll(); }
+    if(STATE && !MANUAL_PRICES.BTC && (changed||force) && !typing){ renderAll(); }
     else if(!STATE){ drawBtc(); }
   } finally { liveBusy = false; }
 }
 const drawBtc = () => loadBtc(false);
 
 function refreshWbtcField(){
-  MANUAL_WBTC = null; $('#wbtc').classList.remove('set');
-  const v = LIVE_WBTC || marketWbtc(); $('#wbtc').value = v ? fmtPrice(v) : '';
-  wbtcHint();
+  MANUAL_PRICES = {}; MANUAL_WBTC = null;
+  syncPriceInputForAsset();
 }
 function setWbtc(v){
-  const ref = LIVE_WBTC || marketWbtc();
+  const g = SIM_ASSET || 'BTC';
+  const ref = LIVE_PRICES[g] || marketPriceOf(g);
   if(v && ref && Math.abs(v-ref)<0.005) v = null;
-  MANUAL_WBTC = v;
-  $('#wbtc').classList.toggle('set', !!v);
-  if(!v && ref) $('#wbtc').value = fmtPrice(ref);
-  wbtcHint();
+  if(v){ MANUAL_PRICES[g] = v; } else { delete MANUAL_PRICES[g]; }
+  MANUAL_WBTC = MANUAL_PRICES.BTC || null;
+  syncPriceInputForAsset();
   if(STATE) renderAll();
 }
 
@@ -2096,7 +2262,11 @@ $('#addW').onclick = addWallet;
 $('#wbtc').addEventListener('change',()=>setWbtc(parseNum($('#wbtc').value)));
 $('#wbtc').addEventListener('keydown',e=>{ if(e.key==='Enter') setWbtc(parseNum($('#wbtc').value)); });
 $('#wbtcClear').onclick = ()=>setWbtc(null);
-$('#wbtc').addEventListener('blur',()=>{ if(!MANUAL_WBTC && LIVE_WBTC) $('#wbtc').value = fmtPrice(LIVE_WBTC); });
+$('#wbtc').addEventListener('blur',()=>{
+  const g = SIM_ASSET || 'BTC';
+  const live = LIVE_PRICES[g] || marketPriceOf(g);
+  if(!MANUAL_PRICES[g] && live) $('#wbtc').value = fmtPrice(live);
+});
 
 (function init(){
   let savedTheme = 'dark';
