@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Monitor DeFi</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2064%2064%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22rg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2338bdf8%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2310b981%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2256%22%20height%3D%2256%22%20rx%3D%2216%22%20fill%3D%22%230f172a%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2221%22%20fill%3D%22none%22%20stroke%3D%22%231e293b%22%20stroke-width%3D%222.5%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2213%22%20fill%3D%22none%22%20stroke%3D%22%231e293b%22%20stroke-width%3D%222.5%22/%3E%3Cpath%20d%3D%22M32%2011%20A21%2021%200%200%201%2053%2032%22%20fill%3D%22none%22%20stroke%3D%22url(%23rg)%22%20stroke-width%3D%223.5%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2232%22%20y1%3D%2232%22%20x2%3D%2247%22%20y2%3D%2217%22%20stroke%3D%22url(%23rg)%22%20stroke-width%3D%223.5%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2245%22%20cy%3D%2219%22%20r%3D%223.5%22%20fill%3D%22%2310b981%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%224%22%20fill%3D%22%2338bdf8%22/%3E%3C/svg%3E">
-<meta name="theme-color" content="#0b0f17">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Monitor DeFi">
 <meta property="og:title" content="Monitor DeFi">
@@ -115,6 +114,17 @@ th:first-child,td:first-child{text-align:left}
 .liq-badge .copy-liq:hover{opacity:.9}
 .liq-badge .copy-liq.ok{background:var(--good);border-color:var(--good);color:#fff}
 details summary{cursor:pointer;color:var(--text-2)}
+.donate-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:18px 0 4px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.donate-info{display:flex;align-items:center;gap:10px;min-width:0}
+.donate-info img{width:24px;height:24px;border-radius:50%;flex:none}
+.donate-title{font-weight:700;font-size:13px;color:var(--text)}
+.donate-sub{font-size:12px;color:var(--text-2)}
+.donate-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:100%}
+.donate-addr{background:var(--panel-2);border:1px solid var(--border);border-radius:9px;padding:7px 10px;font:600 12px/1.3 var(--mono);color:var(--text);word-break:break-all}
+.donate-copy{padding:7px 12px;font-size:12px;border-radius:9px;white-space:nowrap}
+.donate-copy.ok{background:var(--good);border-color:var(--good);color:#fff}
+.donate-qr{flex:none;background:#fff;padding:6px;border-radius:10px;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;width:108px;height:108px}
+.donate-qr img,.donate-qr canvas{display:block;width:96px;height:96px}
 footer{color:var(--muted);font-size:11px;text-align:center;padding:20px 0}
 @media (max-width:600px){
   .tile .v{font-size:17px}
@@ -233,39 +243,57 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.4.4</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.5.7</span>
       <span class="hint" id="lastUpdate"></span>
-      <button class="ghost theme-btn" id="refreshBtn" title="Atualizar somente posições e saldo em carteira">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
-        <span>Atualizar</span>
+      <button type="button" class="ghost theme-btn" id="refreshBtn" title="Atualizar somente posições e saldo em carteira">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+        Atualizar
       </button>
-      <button class="ghost theme-btn" id="themeBtn" title="Alternar tema claro/escuro"></button>
+      <button type="button" class="ghost theme-btn" id="themeBtn" aria-label="Alternar tema"></button>
     </div>
   </header>
   <main>
-
-  <div class="search">
-    <input id="addr" placeholder="0x... endereço da carteira (pode colar vários)" aria-label="Endereço da carteira" spellcheck="false" autocomplete="off" autocapitalize="off">
-    <button class="ghost" id="addW">Adicionar</button>
-    <button id="go">Carregar</button>
-  </div>
-  <div class="wlist" id="wlist"></div>
-  <div class="ctrl">
-    <label for="wbtc" id="simAssetLbl">Preço do BTC (US$)</label>
-    <span class="qcell"><button class="undo" id="wbtcClear" title="Voltar ao preço ao vivo" aria-label="Voltar ao preço ao vivo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><input id="wbtc" inputmode="decimal" placeholder="automático" autocomplete="off"></span>
-    <span class="hint" id="wbtcHint">Vale para todas as redes. Vazio = preço de mercado.</span>
-    <div class="fxline" id="fxLine"></div>
-  </div>
-  <div class="status" id="status" role="status" aria-live="polite">Cole o endereço da carteira. Nada é conectado nem assinado — só leitura de dados públicos.</div>
-
-  <!-- Card do gráfico fora de #out: nunca é recriado por buscas/re-renders, então o TradingView permanece aberto -->
+    <div class="search">
+      <label for="addr" class="sr-only">Endereço da carteira EVM</label>
+      <input id="addr" type="text" placeholder="Cole um ou mais endereços 0x… (separados por espaço ou vírgula)" autocomplete="off" spellcheck="false">
+      <button type="button" class="ghost" id="addW">Adicionar</button>
+      <button type="button" id="go">Carregar</button>
+    </div>
+    <div class="wlist" id="wlist"></div>
+    <div class="ctrl">
+      <label for="wbtc" id="simAssetLbl">Preço do BTC (US$)</label>
+      <input id="wbtc" type="text" inputmode="decimal" placeholder="ex: 95000">
+      <button type="button" class="ghost" id="wbtcClear" title="Voltar ao preço ao vivo">Ao vivo</button>
+      <span class="hint" id="wbtcHint">Buscando preço…</span>
+      <div class="fxline" id="fxLine"></div>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  <!-- Card do gráfico fora de #out: nunca é recriado por buscas/re-renders, então o gráfico permanece aberto -->
   <div class="card" id="btcCard">
     <div class="mkt-head"><h2 id="tvTitle">BTC/USD · TradingView</h2><span class="hint" id="btcNowTxt"></span></div>
     <div class="liq-alert" id="liqAlertBox"></div>
-    <div class="tvbox locked" id="tvBox"><div class="chartbox" id="tvWrap"><div id="tvContainer" style="width:100%;height:100%"></div></div><button type="button" class="tvlock" id="tvLock">Toque para interagir com o gráfico</button></div><button type="button" class="ghost tvunlock" id="tvUnlock">Voltar a rolar a página</button>
+    <div class="tvbox locked" id="tvBox">
+      <div class="chartbox" id="tvWrap"><div id="tvContainer" style="width:100%;height:100%"></div></div>
+      <button type="button" class="tvlock" id="tvLock">Toque para interagir com o gráfico</button>
+    </div>
+    <button type="button" class="ghost tvunlock" id="tvUnlock">Voltar a rolar a página</button>
   </div>
   <div id="out"></div>
   </main>
+  <section class="donate-card" aria-label="Doação para o desenvolvedor">
+    <div class="donate-info">
+      <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png" alt="USDC" loading="lazy" referrerpolicy="no-referrer">
+      <div>
+        <div class="donate-title">Apoie o desenvolvedor</div>
+        <div class="donate-sub">Doação em <b>USDC</b> · Rede <b>Polygon</b></div>
+      </div>
+    </div>
+    <div class="donate-box">
+      <code class="donate-addr" id="donateAddr">0x12E0568Fb9861A8735c5C3d456B0E30d053c6c13</code>
+      <button type="button" class="donate-copy" id="copyDonate" title="Copiar endereço USDC (Polygon)">Copiar endereço</button>
+      <div class="donate-qr" id="donateQr" role="img" aria-label="QR Code para doação em USDC na rede Polygon"></div>
+    </div>
+  </section>
   <footer>Dados: API pública Aave v3 · API pública Morpho · API pública Venus · Blockscout &amp; RPC on-chain · DefiLlama · TradingView.<br>Painel informativo: não é aconselhamento financeiro. Os dados vêm de terceiros e podem estar atrasados ou incorretos — confirme antes de tomar decisões.</footer>
 </div>
 
@@ -293,9 +321,29 @@ const esc = s => String(s ?? '').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&l
 const safeUrl = u => { const t = String(u||'').trim(); if(!/^https:\/\//i.test(t)) return ''; try{ return new URL(t).protocol==='https:' ? new URL(t).href : ''; }catch(e){ return ''; } };
 const cleanName = n => String(n||'').replace(/[<>"'`&]/g,'').replace(/\s+/g,' ').trim().slice(0,24);
 const setStatus = t => { const el = $('#status'); if(el) el.textContent = t; };
-const sameAddr = (a,b)=>!!a&&!!b&&a.toLowerCase()===b.toLowerCase();
-const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${addr}` : null;
+const sameAddr = (a,b) => String(a||'').toLowerCase() === String(b||'').toLowerCase();
+const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${String(addr).toLowerCase()}` : null;
+
 /* ---------------------------------------------------------------------------
+   v1.5.7  Adiciona QR Code para doação em USDC (Rede Polygon) na seção de apoio.
+   v1.5.6  Adiciona seção de doação para o desenvolvedor (USDC · Rede Polygon)
+           com botão de cópia rápida no rodapé da página.
+   v1.5.5  Ajusta alerta de liquidação para ficar amarelo (atenção) quando a
+           distância até a liquidação estiver abaixo de 40% (mantendo vermelho
+           abaixo de 10%).
+   v1.5.4  Ajusta alerta de liquidação para ficar vermelho (crítico) quando a
+           distância até a liquidação estiver abaixo de 10%.
+   v1.5.3  Corrige SyntaxError (abertura /* do comentário de histórico ausente),
+           define helpers sameAddr/pcoin e remove marcadores residuais do HTML.
+   v1.5.2  Desfaz a adição do Lightweight Charts e retorna ao widget direto do
+           TradingView (mantendo BTC na tela inicial e troca automática para o
+           ativo em risco de liquidação).
+   v1.5.1  Corrige TypeError ao iniciar (restaura #themeBtn, barra de busca,
+           lista de carteiras, controles de preço/câmbio e #status que haviam
+           sido cortados do HTML) e remove marcações residuais do topo/rodapé.
+   v1.5.0  Adiciona gráfico TradingView Lightweight Charts (modo padrão "Com Liquidação")
+           com linhas horizontais automáticas de liquidação e seletor de timeframe (15m/1h/4h/1d),
+           mantendo alternância rápida para o TradingView completo.
    v1.4.4  TradingView troca automaticamente para o ativo em risco de liquidação após
            carregar uma carteira com alerta ativo, mantendo BTC/USD na tela inicial.
    v1.4.3  Remove o seletor manual de ativo na barra de preço: o ativo exibido é definido
@@ -350,7 +398,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${a
            foco visível, h1/main, aria-live, aria-labels, caption/scope nas tabelas.
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v1.4.4';
+const APP_VERSION = 'v1.5.7';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -1574,6 +1622,7 @@ function holdingsCard(){
 let TV_ACTIVE = false;
 let tvWidgetInstance = null;
 let tvMounting = false;
+
 const TV_SYMBOL_MAP = {
   BTC:'COINBASE:BTCUSD', ETH:'COINBASE:ETHUSD', BNB:'BINANCE:BNBUSDT',
   AVAX:'COINBASE:AVAXUSD', POL:'BINANCE:POLUSDT', SOL:'COINBASE:SOLUSD',
@@ -1593,6 +1642,7 @@ function tvSymbolFor(asset){
   if(!g) return 'COINBASE:BTCUSD';
   return TV_SYMBOL_MAP[g] || `BINANCE:${g}USDT`;
 }
+
 function syncSimAssetFromLiq(liqs){
   const riskAssets = STATE ? [...new Set((liqs||[]).map(l => l.asset).filter(Boolean))] : [];
   const target = riskAssets.length ? riskAssets[0] : 'BTC';
@@ -1648,10 +1698,11 @@ function renderLiqAlert(){
   let hasDanger = false, hasWarn = false;
   const badges = liqs.map(l => {
     const dropRatio = l.dropRatio != null ? l.dropRatio : (l.curPrice > 0 && l.v > 0 ? (l.curPrice - l.v) / l.curPrice : null);
-    const hfBad = l.hf != null && isFinite(l.hf) && l.hf < 1.15;
+    const hfBad = l.hf != null && isFinite(l.hf) && l.hf < 1.10;
     const hfWarn = l.hf != null && isFinite(l.hf) && l.hf < 1.5;
-    const lvl = (dropRatio != null && dropRatio <= 0.12) || hfBad ? 'danger'
-      : (dropRatio != null && dropRatio <= 0.25) || hfWarn ? 'warn' : '';
+    const lvl = dropRatio != null
+      ? (dropRatio < 0.10 ? 'danger' : (dropRatio < 0.40 || hfWarn) ? 'warn' : '')
+      : (hfBad ? 'danger' : hfWarn ? 'warn' : '');
     if(lvl === 'danger') hasDanger = true;
     else if(lvl === 'warn') hasWarn = true;
     const rawVal = l.v > 0 ? Number(l.v.toFixed(2)) : null;
@@ -2267,6 +2318,50 @@ $('#wbtc').addEventListener('blur',()=>{
   const live = LIVE_PRICES[g] || marketPriceOf(g);
   if(!MANUAL_PRICES[g] && live) $('#wbtc').value = fmtPrice(live);
 });
+const donateBtn = $('#copyDonate');
+const DONATE_ADDR = '0x12E0568Fb9861A8735c5C3d456B0E30d053c6c13';
+const donateQr = $('#donateQr');
+if(donateQr){
+  try{
+    if(typeof QRCode !== 'undefined'){
+      new QRCode(donateQr, {
+        text: DONATE_ADDR,
+        width: 96,
+        height: 96,
+        colorDark: '#0f172a',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }else{
+      throw new Error('QRCode lib unavailable');
+    }
+  }catch(_e){
+    donateQr.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=4&data=${encodeURIComponent(DONATE_ADDR)}" alt="QR Code USDC Polygon" loading="lazy" referrerpolicy="no-referrer">`;
+  }
+}
+if(donateBtn){
+  donateBtn.onclick = async()=>{
+    const addr = DONATE_ADDR;
+    let ok = false;
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = addr;
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ok = document.execCommand('copy');
+      ta.remove();
+    }catch(_e){ ok = false; }
+    if(!ok && navigator.clipboard && navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(addr); ok = true; }catch(_e){ ok = false; }
+    }
+    const old = donateBtn.textContent;
+    donateBtn.textContent = ok ? 'Copiado ✓' : 'Selecione e copie';
+    donateBtn.classList.toggle('ok', ok);
+    setTimeout(()=>{ donateBtn.textContent = old; donateBtn.classList.remove('ok'); }, 2000);
+  };
+}
 
 (function init(){
   let savedTheme = 'dark';
