@@ -68,10 +68,8 @@ button:disabled{opacity:.5;cursor:default}
 .tile .v{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
 .tile .s{font-size:12px;color:var(--text-2)}
 .vb{margin-top:4px;font-variant-numeric:tabular-nums}
-.vb .vbtc{font-size:22px;font-weight:700;line-height:1.2;white-space:nowrap}
-.vb .vbtc small{font-size:13px;font-weight:600;color:var(--text-2)}
-.vb .vusd{font-size:15px;font-weight:600;color:var(--text);margin-top:2px}
-.vb .vbrl{font-size:12px;color:var(--text-2)}
+.vb .vusd{font-size:20px;font-weight:700;line-height:1.2;color:var(--text)}
+.vb .vbrl{font-size:13px;color:var(--text-2);margin-top:3px}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin:14px 0}
 .card h2{margin:0 0 4px;font-size:16px}
 .card h3{margin:14px 0 6px;font-size:13px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
@@ -127,7 +125,7 @@ details summary{cursor:pointer;color:var(--text-2)}
 .donate-qr img,.donate-qr canvas{display:block;width:96px;height:96px}
 footer{color:var(--muted);font-size:11px;text-align:center;padding:20px 0}
 @media (max-width:600px){
-  .tile .v{font-size:17px}
+  .tile .v,.vb .vusd{font-size:17px}
   .tiles{grid-template-columns:1fr 1fr}
   .chartbox{height:360px}
   .simtbl thead{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -243,7 +241,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.5.7</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.5.9</span>
       <span class="hint" id="lastUpdate"></span>
       <button type="button" class="ghost theme-btn" id="refreshBtn" title="Atualizar somente posições e saldo em carteira">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
@@ -285,13 +283,13 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png" alt="USDC" loading="lazy" referrerpolicy="no-referrer">
       <div>
         <div class="donate-title">Apoie o desenvolvedor</div>
-        <div class="donate-sub">Doação em <b>USDC</b> · Rede <b>Polygon</b></div>
+        <div class="donate-sub">Doação em <b>USDC</b> · Endereço EVM (<b>Polygon, Base, BNB, Arbitrum, ETH</b>)</div>
       </div>
     </div>
     <div class="donate-box">
       <code class="donate-addr" id="donateAddr">0x12E0568Fb9861A8735c5C3d456B0E30d053c6c13</code>
-      <button type="button" class="donate-copy" id="copyDonate" title="Copiar endereço USDC (Polygon)">Copiar endereço</button>
-      <div class="donate-qr" id="donateQr" role="img" aria-label="QR Code para doação em USDC na rede Polygon"></div>
+      <button type="button" class="donate-copy" id="copyDonate" title="Copiar endereço EVM (Polygon, Base, BNB, Arbitrum, ETH)">Copiar endereço</button>
+      <div class="donate-qr" id="donateQr" role="img" aria-label="QR Code para doação em endereço EVM (Polygon, Base, BNB, Arbitrum, ETH)"></div>
     </div>
   </section>
   <footer>Dados: API pública Aave v3 · API pública Morpho · API pública Venus · Blockscout &amp; RPC on-chain · DefiLlama · TradingView.<br>Painel informativo: não é aconselhamento financeiro. Os dados vêm de terceiros e podem estar atrasados ou incorretos — confirme antes de tomar decisões.</footer>
@@ -325,6 +323,10 @@ const sameAddr = (a,b) => String(a||'').toLowerCase() === String(b||'').toLowerC
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v1.5.9  Atualiza a seção de doação no rodapé para informar endereço EVM e
+           as redes aceitas (Polygon, Base, BNB, Arbitrum e ETH).
+   v1.5.8  Remove a exibição em BTC dos cards de resumo (Patrimônio total e
+           sequência), mantendo apenas os valores em USD e Reais (R$).
    v1.5.7  Adiciona QR Code para doação em USDC (Rede Polygon) na seção de apoio.
    v1.5.6  Adiciona seção de doação para o desenvolvedor (USDC · Rede Polygon)
            com botão de cópia rápida no rodapé da página.
@@ -398,7 +400,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${S
            foco visível, h1/main, aria-live, aria-labels, caption/scope nas tabelas.
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v1.5.7';
+const APP_VERSION = 'v1.5.9';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -436,8 +438,8 @@ function fxLine(){
     + ` <span class="hint">· ${FX_SRC} · ${new Date(FX_TS).toLocaleTimeString('pt-BR')} · atualização manual</span>`;
 }
 const fmtBrl = (v,d=2) => (v<0?'-':'') + 'R$ ' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
-function valBlock(usd, btc){
-  return `<div class="vb"><div class="vbtc">${btc?(usd/btc).toLocaleString('pt-BR',{minimumFractionDigits:4,maximumFractionDigits:4})+'<small> BTC</small>':'—'}</div><div class="vusd">${fmtUsd(usd)}</div>${USD_BRL?`<div class="vbrl">${fmtBrl(usd*USD_BRL)}</div>`:''}</div>`;
+function valBlock(usd){
+  return `<div class="vb"><div class="vusd">${fmtUsd(usd)}</div>${USD_BRL?`<div class="vbrl">${fmtBrl(usd*USD_BRL)}</div>`:''}</div>`;
 }
 
 let MANUAL_WBTC = null;
@@ -1530,15 +1532,15 @@ function updateTiles(){
   for(const k in SIM_DELTA){ dS+=SIM_DELTA[k].dS; dD+=SIM_DELTA[k].dD; dE+=SIM_DELTA[k].dE; }
   const simOn = Math.abs(dS)+Math.abs(dD)+Math.abs(dE) > 0.005;
   const sup=B.S+dS, debt=B.D+dD, earn=B.E+dE, net=sup-debt;
-  const aaveNet = net, total = aaveNet+B.wal, btc = btcNow();
+  const aaveNet = net, total = aaveNet+B.wal;
   const apy = net>0 ? earn/net : null;
   const tag = simOn ? ' <span class="pill" style="border-color:var(--warn);color:var(--warn)">simulado</span>' : '';
   el.innerHTML = `
-    <div class="tile"><div class="l">Patrimônio total${tag}</div>${valBlock(total,btc)}</div>
-    <div class="tile"><div class="l">Em plataformas (líquido)${tag}</div>${valBlock(aaveNet,btc)}</div>
-    <div class="tile"><div class="l">Em carteira</div>${valBlock(B.wal,btc)}</div>
-    <div class="tile"><div class="l">Depositado${tag}</div>${valBlock(sup,btc)}</div>
-    <div class="tile"><div class="l">Emprestado${tag}</div>${valBlock(debt,btc)}</div>
+    <div class="tile"><div class="l">Patrimônio total${tag}</div>${valBlock(total)}</div>
+    <div class="tile"><div class="l">Em plataformas (líquido)${tag}</div>${valBlock(aaveNet)}</div>
+    <div class="tile"><div class="l">Em carteira</div>${valBlock(B.wal)}</div>
+    <div class="tile"><div class="l">Depositado${tag}</div>${valBlock(sup)}</div>
+    <div class="tile"><div class="l">Emprestado${tag}</div>${valBlock(debt)}</div>
     <div class="tile"><div class="l">APY líquido médio${tag}</div><div class="v ${earn>=0?'pos':'neg'}">${apy==null?'—':fmtPct(apy)}</div></div>`;
 }
 
@@ -2336,7 +2338,7 @@ if(donateQr){
       throw new Error('QRCode lib unavailable');
     }
   }catch(_e){
-    donateQr.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=4&data=${encodeURIComponent(DONATE_ADDR)}" alt="QR Code USDC Polygon" loading="lazy" referrerpolicy="no-referrer">`;
+    donateQr.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=4&data=${encodeURIComponent(DONATE_ADDR)}" alt="QR Code endereço EVM (Polygon, Base, BNB, Arbitrum, ETH)" loading="lazy" referrerpolicy="no-referrer">`;
   }
 }
 if(donateBtn){
