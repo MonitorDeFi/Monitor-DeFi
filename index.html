@@ -1,0 +1,1668 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="base-uri 'none'; object-src 'none'; form-action 'none'; frame-src https://www.tradingview-widget.com https://www.tradingview.com">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitor DeFi</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2064%2064%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22rg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2338bdf8%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2310b981%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2256%22%20height%3D%2256%22%20rx%3D%2216%22%20fill%3D%22%230f172a%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2221%22%20fill%3D%22none%22%20stroke%3D%22%231e293b%22%20stroke-width%3D%222.5%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2213%22%20fill%3D%22none%22%20stroke%3D%22%231e293b%22%20stroke-width%3D%222.5%22/%3E%3Cpath%20d%3D%22M32%2011%20A21%2021%200%200%201%2053%2032%22%20fill%3D%22none%22%20stroke%3D%22url(%23rg)%22%20stroke-width%3D%223.5%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2232%22%20y1%3D%2232%22%20x2%3D%2247%22%20y2%3D%2217%22%20stroke%3D%22url(%23rg)%22%20stroke-width%3D%223.5%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2245%22%20cy%3D%2219%22%20r%3D%223.5%22%20fill%3D%22%2310b981%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%224%22%20fill%3D%22%2338bdf8%22/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0b0f17">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Monitor DeFi">
+<meta property="og:title" content="Monitor DeFi">
+<meta property="og:description" content="Acompanhe suas posições na Aave e na Morpho e o saldo das carteiras em todas as redes: preço de liquidação e simulações.">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Monitor DeFi">
+<meta name="twitter:description" content="Acompanhe suas posições na Aave e na Morpho e o saldo das carteiras em todas as redes: preço de liquidação e simulações.">
+<!-- Depois de hospedar, adicione (URLs precisam ser absolutas, do seu domínio):
+     <meta property="og:url" content="https://SEU-DOMINIO/">
+     <meta property="og:image" content="https://SEU-DOMINIO/preview.png">  (ideal: 1200x630) -->
+<meta name="description" content="Acompanhe suas posições na Aave e na Morpho e o saldo das carteiras em todas as redes: preço de liquidação e simulações.">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#0b0f17; --bg-glow:#14213a; --panel:#111827; --panel-2:#0f1622; --border:#1f2a3a;
+  --text:#e8ecf3; --text-2:#a9b3c4; --muted:#8b96a9;
+  --accent:#3987e5; --accent-btn:#2b6fcf; --accent-2:#d95926; --mono:ui-monospace,SFMono-Regular,Menlo,var(--mono); --ghost-on:#16263f; --hover-bg:#1a2436;
+  --good:#22c55e; --warn:#eab308; --bad:#ef4444;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c; --s7:#9085e9; --s8:#e66767;
+}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#f4f6fb; --bg-glow:#e2e8f5; --panel:#ffffff; --panel-2:#f8fafc; --border:#d8e0ec;
+  --text:#0f172a; --text-2:#475569; --muted:#56657a;
+  --accent:#2563eb; --accent-btn:#2563eb; --accent-2:#d95926; --ghost-on:#e0eaff; --hover-bg:#eef2f7;
+  --good:#15803d; --warn:#a16207; --bad:#dc2626;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 50% -200px,var(--bg-glow) 0%,var(--bg) 60%);background-color:var(--bg);color:var(--text);font:14px/1.45 Inter,Segoe UI,system-ui,sans-serif;min-height:100vh;min-height:100dvh}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;display:flex;gap:10px;align-items:center}
+.brand .logo{flex:none;display:block}
+.brand small{color:var(--muted);font-weight:500;font-size:12px}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ver-badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--text-2);font:600 11px/1 var(--mono)}
+@keyframes radarSweepSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes radarPulseWave{0%{transform:scale(0.35);opacity:.75}100%{transform:scale(1.15);opacity:0}}
+@keyframes radarPingBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(0.75)}}
+.radar-sweep{transform-origin:32px 32px;animation:radarSweepSpin 2.8s linear infinite}
+.radar-pulse{transform-origin:32px 32px;animation:radarPulseWave 2.8s ease-out infinite}
+.radar-ping-a{transform-origin:44px 20px;animation:radarPingBlink 2.8s ease-in-out infinite}
+.radar-ping-b{transform-origin:23px 39px;animation:radarPingBlink 2.8s ease-in-out 1.4s infinite}
+@media (prefers-reduced-motion:reduce){
+  .radar-sweep,.radar-pulse,.radar-ping-a,.radar-ping-b{animation:none}
+}
+.theme-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;font-size:12px;border-radius:10px}
+.search{margin:18px 0 10px;display:flex;gap:8px;flex-wrap:wrap}
+.search input{flex:1;min-width:240px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font:13px var(--mono)}
+button{background:var(--accent-btn);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;font-size:13px}
+button.ghost{background:transparent;border:1px solid var(--border);color:var(--text-2)}
+button.ghost.on{border-color:var(--accent);color:var(--text);background:var(--ghost-on)}
+button:disabled{opacity:.5;cursor:default}
+.hint{color:var(--muted);font-size:12px}
+.status{color:var(--text-2);font-size:12px;margin:6px 0 0;min-height:18px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin:16px 0}
+.tile{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.tile .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.tile .v{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12px;color:var(--text-2)}
+.vb{margin-top:4px;font-variant-numeric:tabular-nums}
+.vb .vbtc{font-size:22px;font-weight:700;line-height:1.2;white-space:nowrap}
+.vb .vbtc small{font-size:13px;font-weight:600;color:var(--text-2)}
+.vb .vusd{font-size:15px;font-weight:600;color:var(--text);margin-top:2px}
+.vb .vbrl{font-size:12px;color:var(--text-2)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin:14px 0}
+.card h2{margin:0 0 4px;font-size:16px}
+.card h3{margin:14px 0 6px;font-size:13px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.chartbox{position:relative;height:440px;margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+th:first-child,td:first-child{text-align:left}
+.tblwrap{overflow-x:auto}
+.asset{display:flex;align-items:center;gap:8px}
+.asset img{width:20px;height:20px;border-radius:50%;background:#223}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);color:var(--text-2)}
+.mkt-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.mkt-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:10px}
+.mkt-stats>div{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+.mkt-stats .l{color:var(--muted);font-size:11px}
+.mkt-stats .v{font-weight:700;font-size:16px}
+.hf-good{color:var(--good)} .hf-warn{color:var(--warn)} .hf-bad{color:var(--bad)}
+.sim{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:12px}
+.neg{color:var(--bad)} .pos{color:var(--good)}
+.empty{color:var(--muted);text-align:center;padding:30px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-2);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.liq-alert{margin-top:10px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--good);background:rgba(34,197,94,.10);display:flex;flex-direction:column;gap:10px;transition:background-color .2s,border-color .2s}
+.liq-alert.warn{border-color:var(--warn);background:rgba(234,179,8,.14)}
+.liq-alert.danger{border-color:var(--bad);background:rgba(239,68,68,.16)}
+.liq-alert-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px}
+.liq-status-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--good);color:var(--good);background:rgba(34,197,94,.14)}
+.liq-alert.warn .liq-status-pill{border-color:var(--warn);color:var(--warn);background:rgba(234,179,8,.18)}
+.liq-alert.danger .liq-status-pill{border-color:var(--bad);color:var(--bad);background:rgba(239,68,68,.20)}
+.liq-badges{display:flex;gap:8px;flex-wrap:wrap}
+.liq-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:9px;border:1px solid var(--border);background:var(--panel);font-size:12px;font-variant-numeric:tabular-nums}
+.liq-badge.warn{border-color:var(--warn);background:rgba(234,179,8,.10)}
+.liq-badge.danger{border-color:var(--bad);background:rgba(239,68,68,.12)}
+.liq-badge b{font-family:var(--mono);color:var(--text)}
+.liq-badge .copy-liq{background:var(--accent-btn);border:1px solid var(--accent-btn);color:#fff;padding:3px 8px;font-size:11px;font-weight:600;border-radius:6px;cursor:pointer;transition:opacity .15s,background-color .15s}
+.liq-badge .copy-liq:hover{opacity:.9}
+.liq-badge .copy-liq.ok{background:var(--good);border-color:var(--good);color:#fff}
+details summary{cursor:pointer;color:var(--text-2)}
+footer{color:var(--muted);font-size:11px;text-align:center;padding:20px 0}
+@media (max-width:600px){
+  .tile .v{font-size:17px}
+  .tiles{grid-template-columns:1fr 1fr}
+  .chartbox{height:360px}
+  .simtbl thead{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .simtbl,.simtbl tbody{display:block}
+  .simtbl tr:not(.swrow){display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 10px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .simtbl td{border:0;padding:0;text-align:left;white-space:normal}
+  .simtbl td:nth-child(1){grid-column:1/3}
+  .simtbl td:nth-child(2){grid-column:3;text-align:right}
+  .simtbl td.qcell{grid-column:1/-1;display:flex;align-items:center}
+  .simtbl td.qcell::before{display:none}
+  .simtbl input.qty{flex:1;width:auto;font-size:16px}
+  .simtbl td[data-l]::before{content:attr(data-l);display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .simtbl .actcell{grid-column:1/-1;display:flex;gap:8px}
+  .simtbl .actcell .swbtn{flex:1;padding:8px}
+  .rpbtn{margin-left:0}
+  .simtbl .swrow,.simtbl .swrow td{display:block}
+  .swrow .swap{position:static;max-width:none}
+  .swap input,.swap select{font-size:16px}
+  .swap select{max-width:100%}
+}
+.wlist{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.wchip{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px 8px 6px 10px;font-size:13px}
+.wchip.off{opacity:.45}
+.wchip input{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+.wchip .wn{font-weight:600}
+.wchip .wv{color:var(--text-2);font-variant-numeric:tabular-nums}
+.wchip .wcopy{background:transparent;border:0;padding:2px 4px;color:var(--muted);display:flex;align-items:center;border-radius:6px}
+.wchip .wcopy:hover{color:var(--text);background:var(--hover-bg)}
+.wchip .wcopy.ok{color:var(--good)}
+.card > summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card > summary::before{content:'▸';color:var(--muted)}
+details[open].card > summary::before{content:'▾'}
+details.card[open] > summary{margin-bottom:10px}
+.linkbtn{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px}
+.linkwarn{align-self:center;color:var(--warn)}
+.linkbtn.ok{color:var(--good);border-color:var(--good)}
+.wchip .wdel{background:transparent;border:0;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1}
+.wchip .wdel:hover{color:var(--bad)}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:4px 0 6px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.fxline{flex-basis:100%;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:8px;margin-top:2px}
+.fxline b{font-size:15px;font-variant-numeric:tabular-nums}
+.ctrl label{font-size:12px;color:var(--text-2);font-weight:600}
+.ctrl input{width:150px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font:600 14px var(--mono)}
+.ctrl input.set{border-color:var(--warn)}
+.simtbl input.qty{width:140px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font:13px var(--mono);text-align:right}
+.sim .mkt-stats{margin-top:12px}
+.qcell{white-space:nowrap}
+.swap{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.swap select,.swap input{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font:13px Inter,Segoe UI,sans-serif}
+.swap input{width:130px;font-family:var(--mono);text-align:right}
+.swap button:disabled{opacity:.45;cursor:default}
+.swrow td{padding-top:0}
+.swrow .swap{position:sticky;left:0;max-width:calc(100vw - 72px);box-sizing:border-box;margin-top:0;border-top:0;padding:8px 10px;background:rgba(128,128,128,0.06);border-radius:8px}
+.swbtn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:4px 7px;color:var(--text-2);cursor:pointer;vertical-align:middle}
+.swbtn:hover,.swbtn.on{color:var(--warn);border-color:var(--warn)}
+.swbtn:disabled{opacity:.3;cursor:default}
+.actcell{white-space:nowrap}
+.rpbtn{margin-left:4px;font-size:12px;padding:4px 8px}
+.undo{visibility:hidden;background:transparent;border:0;padding:4px 6px;margin-right:4px;color:var(--warn);vertical-align:middle;cursor:pointer;border-radius:6px}
+.undo.on{visibility:visible}
+.undo:hover{background:rgba(234,179,8,.15)}
+/* ---- Revisão: acessibilidade, toque e mobile ---- */
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.brand-title{margin:0;font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--accent)}
+.tvbox{display:flow-root;position:relative}
+.tvlock,.tvunlock{display:none}
+@media (pointer:coarse){
+  button{min-height:44px}
+  .wchip{min-height:44px}
+  .wchip input[type=checkbox]{width:24px;height:24px;margin:10px}
+  .wchip .wdel,.wchip .wcopy,.undo{min-width:44px}
+  .tvbox.locked .tvlock{display:flex;position:absolute;top:10px;left:0;width:100%;height:calc(100% - 10px);align-items:center;justify-content:center;border-radius:10px;background:rgba(11,15,23,.55);color:#fff;font-size:14px}
+  .tvbox:not(.locked)+.tvunlock{display:inline-flex;align-items:center;margin-top:8px}
+}
+@media (max-width:600px){
+  .search input,.ctrl input,.swap input,.swap select{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg class="logo" role="img" aria-label="Monitor DeFi" width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="radarGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="100%" stop-color="#10b981"/>
+          </linearGradient>
+          <radialGradient id="sweepGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect x="4" y="4" width="56" height="56" rx="16" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
+        <line x1="32" y1="10" x2="32" y2="54" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="2 3"/>
+        <line x1="10" y1="32" x2="54" y2="32" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="2 3"/>
+        <circle cx="32" cy="32" r="20" fill="none" stroke="#1e293b" stroke-width="2"/>
+        <circle cx="32" cy="32" r="12" fill="none" stroke="#26354d" stroke-width="2"/>
+        <circle class="radar-pulse" cx="32" cy="32" r="18" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.5"/>
+        <g class="radar-sweep">
+          <path d="M32 32 L32 12 A20 20 0 0 1 51 26 Z" fill="url(#sweepGlow)"/>
+          <path d="M32 12 A20 20 0 0 1 51 26" fill="none" stroke="url(#radarGrad)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="32" y1="32" x2="46" y2="18" stroke="url(#radarGrad)" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+        <circle class="radar-ping-a" cx="44" cy="20" r="3.2" fill="#10b981"/>
+        <circle class="radar-ping-b" cx="23" cy="39" r="2.2" fill="#38bdf8" opacity="0.85"/>
+        <circle cx="32" cy="32" r="3.5" fill="#38bdf8"/>
+      </svg>
+      <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + carteira, em todas as redes</small></h1>
+    </div>
+    <div class="hdr-right">
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.2.3</span>
+      <span class="hint" id="lastUpdate"></span>
+      <button class="ghost theme-btn" id="refreshBtn" title="Atualizar cotações, gráfico BTC e posições">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+        <span>Atualizar</span>
+      </button>
+      <button class="ghost theme-btn" id="themeBtn" title="Alternar tema claro/escuro"></button>
+    </div>
+  </header>
+  <main>
+
+  <div class="search">
+    <input id="addr" placeholder="0x... endereço da carteira (pode colar vários)" aria-label="Endereço da carteira" spellcheck="false" autocomplete="off" autocapitalize="off">
+    <button class="ghost" id="addW">Adicionar</button>
+    <button id="go">Carregar</button>
+  </div>
+  <div class="wlist" id="wlist"></div>
+  <div class="ctrl">
+    <label for="wbtc">Preço do BTC (US$)</label>
+    <span class="qcell"><button class="undo" id="wbtcClear" title="Voltar ao preço ao vivo" aria-label="Voltar ao preço ao vivo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><input id="wbtc" inputmode="decimal" placeholder="automático" autocomplete="off"></span>
+    <span class="hint" id="wbtcHint">Vale para todas as redes. Vazio = preço de mercado.</span>
+    <div class="fxline" id="fxLine"></div>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite">Cole o endereço da carteira. Nada é conectado nem assinado — só leitura de dados públicos.</div>
+
+  <!-- Card do gráfico fora de #out: nunca é recriado por buscas/re-renders, então o TradingView permanece aberto -->
+  <div class="card" id="btcCard">
+    <div class="mkt-head"><h2>BTC/USD · TradingView</h2><span class="hint" id="btcNowTxt"></span></div>
+    <div class="liq-alert" id="liqAlertBox"></div>
+    <div class="tvbox locked" id="tvBox"><div class="chartbox" id="tvWrap"><div id="tvContainer" style="width:100%;height:100%"></div></div><button type="button" class="tvlock" id="tvLock">Toque para interagir com o gráfico</button></div><button type="button" class="ghost tvunlock" id="tvUnlock">Voltar a rolar a página</button>
+  </div>
+  <div id="out"></div>
+  </main>
+  <footer>Dados: API pública Aave v3 · API pública Morpho · Blockscout &amp; RPC on-chain · DefiLlama · TradingView.<br>Painel informativo: não é aconselhamento financeiro. Os dados vêm de terceiros e podem estar atrasados ou incorretos — confirme antes de tomar decisões.</footer>
+</div>
+
+<script>
+const API = 'https://api.v3.aave.com/graphql';
+const LLAMA_CHAIN = {1:'ethereum',42161:'arbitrum',43114:'avax',8453:'base',56:'bsc',42220:'celo',100:'xdai',59144:'linea',1088:'metis',10:'optimism',137:'polygon',534352:'scroll',1868:'soneium',146:'sonic',324:'era',9745:'plasma',57073:'ink',5000:'mantle',4326:'megaeth',196:'xlayer',143:'monad'};
+const BLOCKSCOUT = {1:'eth.blockscout.com',10:'explorer.optimism.io',137:'polygon.blockscout.com',8453:'base.blockscout.com',42161:'arbitrum.blockscout.com',324:'zksync.blockscout.com',42220:'celo.blockscout.com',1868:'soneium.blockscout.com',57073:'explorer.inkonchain.com',4326:'megaeth.blockscout.com'};
+const BS_NAME = {1:'Ethereum',10:'Optimism',137:'Polygon',8453:'Base',42161:'Arbitrum',324:'zkSync',42220:'Celo',1868:'Soneium',57073:'Ink',4326:'MegaETH'};
+const ETH_COIN = {sym:'ETH', coin:'coingecko:ethereum'};
+const NATIVE = {1:ETH_COIN,10:ETH_COIN,8453:ETH_COIN,42161:ETH_COIN,324:ETH_COIN,1868:ETH_COIN,57073:ETH_COIN,4326:ETH_COIN,534352:ETH_COIN,59144:ETH_COIN,137:{sym:'POL',coin:'coingecko:polygon-ecosystem-token'},42220:{sym:'CELO',coin:'coingecko:celo'},
+  43114:{sym:'AVAX',coin:'coingecko:avalanche-2'},56:{sym:'BNB',coin:'coingecko:binancecoin'},100:{sym:'XDAI',coin:'coingecko:xdai'},146:{sym:'S',coin:'coingecko:sonic-3'},5000:{sym:'MNT',coin:'coingecko:mantle'},
+  1088:{sym:'METIS',coin:'coingecko:metis-token'},9745:{sym:'XPL',coin:'coingecko:plasma'},196:{sym:'OKB',coin:'coingecko:okb'},143:{sym:'MON',coin:'coingecko:monad'}};
+const CH_NAME = {...BS_NAME, 43114:'Avalanche',56:'BNB Chain',100:'Gnosis',534352:'Scroll',59144:'Linea',146:'Sonic',5000:'Mantle',1088:'Metis',9745:'Plasma',196:'X Layer',143:'Monad'};
+const EVM_ALL_CHAINS = [...new Set([
+  8453, 1, 42161, 10, 137, 56, 43114, 100, 534352, 59144, 146, 5000, 324, 42220, 1868, 57073, 4326, 1088, 9745, 196, 143
+])];
+const SERIES = ['--s1','--s2','--s3','--s4','--s5','--s6','--s7','--s8'].map(v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim());
+const $ = s => document.querySelector(s);
+const fmtUsd = (v,d=2) => (v<0?'-':'') + 'US$ ' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtNum = (v,d=4) => Number(v).toLocaleString('pt-BR',{maximumFractionDigits:d});
+const fmtPct = (v,d=2) => (v*100).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}) + '%';
+const sgnPct = v => `<span class="${v>=0?'pos':'neg'}">${v>=0?'+':''}${fmtPct(v,1)}</span>`;
+const short = a => a.slice(0,6)+'…'+a.slice(-4);
+const esc = s => String(s ?? '').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
+const safeUrl = u => { try{ const x = new URL(String(u||''), location.href); return x.protocol==='https:' ? x.href : ''; }catch(e){ return ''; } };
+const cleanName = n => String(n||'').replace(/[<>"'`&]/g,'').replace(/\s+/g,' ').trim().slice(0,24);
+const setStatus = t => { const el = $('#status'); if(el) el.textContent = t; };
+const sameAddr = (a,b)=>!!a&&!!b&&a.toLowerCase()===b.toLowerCase();
+const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${addr}` : null;
+/* ---------------------------------------------------------------------------
+   HISTÓRICO DE VERSÕES  (a cada mudança: atualizar APP_VERSION aqui E o selo #appVersion no HTML)
+   Regra: correção = +0.0.1 · funcionalidade/mudança de UX = +0.1.0 · mudança incompatível = +1.0.0
+
+   v1.2.3  Preparação para publicação: aviso legal no rodapé e meta tags de compartilhamento
+           (Open Graph/Twitter) com título, descrição e idioma.
+   v1.2.2  O gráfico do TradingView permanece aberto ao adicionar endereço e buscar
+           (card fora de #out; busca/re-render não recriam o iframe). Alerta de
+           liquidação é zerado ao iniciar nova busca.
+   v1.2.1  Corrige DataCloneError (AbortSignal não clonável em iframes/previews):
+           novo fetchT() com AbortController e fallback por timeout sem signal.
+   v1.2.0  Segurança: escape de HTML (XSS) em símbolos/nomes/URLs, CSP, sanitização de
+           nomes do link #w= e do localStorage. Mobile: inputs 16px, alvos de toque 44px,
+           gráfico com trava anti scroll-trap, 100dvh. Acessibilidade: contraste AA,
+           foco visível, h1/main, aria-live, aria-labels, caption/scope nas tabelas.
+   v1.1.1  Versão base recebida para revisão.
+   --------------------------------------------------------------------------- */
+const APP_VERSION = 'v1.2.3';
+function syncVersionBadge(){
+  const el = document.getElementById('appVersion');
+  if(el) el.textContent = APP_VERSION;
+}
+
+let THEME = 'dark';
+function applyTheme(t){
+  const prevTheme = THEME;
+  THEME = t === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = THEME;
+  const mc = document.querySelector('meta[name="theme-color"]');
+  if(mc) mc.content = THEME === 'light' ? '#f4f6fb' : '#0b0f17';
+  const btn = $('#themeBtn');
+  if(btn){
+    btn.innerHTML = THEME === 'dark'
+      ? '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg> Claro'
+      : '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg> Escuro';
+  }
+  try{ localStorage.setItem('monitor_defi_theme', THEME); }catch(e){}
+  if(prevTheme !== THEME && document.getElementById('tvContainer')) loadBtc(true);
+}
+
+let USD_BRL = null;
+let FX_SRC = '', FX_TS = 0, FX_PCT = null;
+async function fetchBrl(){
+  try{ const j = await (await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL',{cache:'no-store'})).json(); const v=+j.USDBRL.bid; if(v>0){ FX_SRC='AwesomeAPI'; FX_PCT=+j.USDBRL.pctChange/100; FX_TS=Date.now(); USD_BRL=v; fxLine(); return v; } }catch(e){}
+  try{ const j = await (await fetch('https://open.er-api.com/v6/latest/USD')).json(); const v=+j.rates.BRL; if(v>0){ FX_SRC='open.er-api'; FX_PCT=null; FX_TS=Date.now(); USD_BRL=v; fxLine(); return v; } }catch(e){}
+  return USD_BRL;
+}
+function fxLine(){
+  const el = document.getElementById('fxLine'); if(!el) return;
+  if(!USD_BRL){ el.innerHTML = '<span class="hint">Dólar: buscando cotação…</span>'; return; }
+  el.innerHTML = `<label>Dólar (R$)</label><b>${USD_BRL.toLocaleString('pt-BR',{minimumFractionDigits:4,maximumFractionDigits:4})}</b>`
+    + (FX_PCT!=null ? ` ${sgnPct(FX_PCT)} <span class="hint">no dia</span>` : '')
+    + ` <span class="hint">· ${FX_SRC} · ${new Date(FX_TS).toLocaleTimeString('pt-BR')} · atualização manual</span>`;
+}
+const fmtBrl = (v,d=2) => (v<0?'-':'') + 'R$ ' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+function valBlock(usd, btc){
+  return `<div class="vb"><div class="vbtc">${btc?(usd/btc).toLocaleString('pt-BR',{minimumFractionDigits:4,maximumFractionDigits:4})+'<small> BTC</small>':'—'}</div><div class="vusd">${fmtUsd(usd)}</div>${USD_BRL?`<div class="vbrl">${fmtBrl(usd*USD_BRL)}</div>`:''}</div>`;
+}
+
+let MANUAL_WBTC = null;
+const isWbtc = sym => /^(W?BTC|CBBTC|TBTC|LBTC|BTCB|XBTC|SOLVBTC|UNIBTC|PUMPBTC|FBTC|EBTC)(\.E)?$/i.test(String(sym||'').trim());
+const PURE_STABLE = /^(USDC|USDT|DAI|GHO|USDS|USDBC|PYUSD|LUSD|FRAX|EURC|FDUSD|TUSD)(\.E)?$/i;
+const isPureStable = sym => {
+  const u = String(sym||'').replace(/^USDT0$/i,'USDT').trim();
+  if(/DOGE/i.test(u)) return false;
+  return PURE_STABLE.test(u);
+};
+let LIVE_WBTC = null, LIVE_SRC = '', LIVE_TS = 0;
+const effPrice = (sym, p) => isWbtc(sym) && (MANUAL_WBTC||LIVE_WBTC) ? (MANUAL_WBTC||LIVE_WBTC) : (+p||0);
+function parseNum(s){ s=(s||'').trim().replace(/[^\d.,]/g,''); if(!s) return null; if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,''); const v=parseFloat(s); return v>0?v:null; }
+function marketWbtc(){
+  for(const w of (STATE?.wallets||[])) for(const m of w.markets) for(const r of m.reserves) if(isWbtc(r.underlyingToken.symbol) && +r.usdExchangeRate>0) return +r.usdExchangeRate;
+  return 0;
+}
+const btcNow = () => MANUAL_WBTC || LIVE_WBTC || marketWbtc();
+
+const rowObj = r => r.balance || r.debt;
+const rowAmt = r => +rowObj(r).amount.value;
+const rowP = r => effPrice(r.currency.symbol, rowObj(r).usdPerToken);
+const rowUsd = r => rowAmt(r)*rowP(r);
+const holdUsd = h => h.amt*effPrice(h.usym, h.priceNow);
+
+// fetch com timeout. Alguns ambientes (iframes/previews que repassam o fetch por postMessage)
+// não conseguem clonar um AbortSignal e lançam DataCloneError; nesse caso usamos só Promise.race.
+let FETCH_NO_SIGNAL = false;
+async function fetchT(url, opts={}, ms=8000){
+  const race = () => Promise.race([fetch(url, opts), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
+  if(FETCH_NO_SIGNAL) return race();
+  try{
+    const ac = new AbortController();
+    setTimeout(()=>ac.abort(), ms);
+    return await fetch(url, {...opts, signal: ac.signal});
+  }catch(e){
+    if(/DataCloneError/.test(String(e && (e.name+' '+e.message)))){ FETCH_NO_SIGNAL = true; return race(); }
+    throw e;
+  }
+}
+async function gql(query, variables={}, tries=3){
+  for(let i=0;i<tries;i++){
+    try{
+      const r = await fetchT(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query,variables})},12000);
+      const j = await r.json();
+      if(j.errors) throw new Error(j.errors.map(e=>e.message).join('; '));
+      return j.data;
+    }catch(e){ if(i===tries-1) throw e; await new Promise(r=>setTimeout(r,400*(i+1))); }
+  }
+}
+async function pool(items, n, fn){
+  const out = new Array(items.length); let k=0;
+  await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{ while(k<items.length){ const i=k++; out[i]=await fn(items[i],i); } }));
+  return out;
+}
+const BS_CACHE = new Map();
+async function bsGet(host, path, params={}){
+  const url = `https://${host}/api/v2${path}?${new URLSearchParams(params)}`;
+  if(BS_CACHE.has(url)) return BS_CACHE.get(url);
+  for(let tr=0; tr<2; tr++){
+    let r;
+    try{ r = await fetchT(url, {},8000); }
+    catch(e){ await new Promise(s=>setTimeout(s,400*(tr+1))); continue; }
+    if(r.status===429 || r.status>=500){ await new Promise(s=>setTimeout(s,500*(tr+1))); continue; }
+    if(r.status===404){ BS_CACHE.set(url,null); return null; }
+    if(!r.ok) throw new Error(`${host} HTTP ${r.status}`);
+    const j = await r.json(); BS_CACHE.set(url,j); return j;
+  }
+  throw new Error(`${host} indisponível`);
+}
+async function bsPaged(host, path, params={}, maxPages=30){
+  const items=[]; let next=null, truncated=false;
+  for(let p=0; p<maxPages; p++){
+    const j = await bsGet(host, path, {...params, ...(next||{})});
+    if(!j) break;
+    items.push(...(j.items||[]));
+    if(!j.next_page_params) { next=null; break; }
+    next = j.next_page_params;
+    if(p===maxPages-1) truncated=true;
+  }
+  items.truncated = truncated;
+  return items;
+}
+
+const Q_CHAINS = `{ chains { chainId name isTestnet } }`;
+const Q_MARKETS = `query($c:[ChainId!]!,$u:EvmAddress!){ markets(request:{chainIds:$c,user:$u}){ name address icon chain{chainId name icon explorerUrl}
+  userState{ netWorth healthFactor eModeEnabled totalCollateralBase totalDebtBase availableBorrowsBase netAPY{value} currentLiquidationThreshold{value} ltv{value} }
+  reserves{ underlyingToken{address symbol decimals} aToken{address} vToken{address} usdExchangeRate supplyInfo{apy{value} liquidationThreshold{value} maxLTV{value}} borrowInfo{apy{value}} userState{ emode{label liquidationThreshold{value} maxLTV{value}} } } } }`;
+const Q_POS = `query($u:EvmAddress!,$ms:[MarketInput!]!){
+  userSupplies(request:{user:$u,markets:$ms,collateralsOnly:false,orderBy:{balance:DESC}}){ market{address chain{chainId}} currency{symbol address imageUrl} balance{amount{value} usd usdPerToken} apy{value} isCollateral }
+  userBorrows(request:{user:$u,markets:$ms,orderBy:{debt:DESC}}){ market{address chain{chainId}} currency{symbol address imageUrl} debt{amount{value} usd usdPerToken} apy{value} } }`;
+const MORPHO_API = 'https://api.morpho.org/graphql';
+const Q_MORPHO = `query($u:[String!]){
+  marketPositions(first:100, where:{userAddress_in:$u}){ items{ healthFactor market{ marketId lltv chain{id network}
+      loanAsset{symbol address decimals logoURI price{usd}} collateralAsset{symbol address decimals logoURI price{usd}} state{ borrowApy supplyApy } }
+    state{ collateral collateralUsd supplyAssets supplyAssetsUsd borrowAssets borrowAssetsUsd } } }
+  vaultPositions(first:100, where:{userAddress_in:$u}){ items{ vault{ address name symbol chain{id network} asset{symbol address decimals logoURI price{usd}} state{ netApy } } state{ assets assetsUsd } } } }`;
+
+let STATE = null;
+
+async function mgql(query, variables={}){
+  for(let i=0;i<2;i++){
+    try{
+      const r = await fetchT(MORPHO_API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query,variables})},10000);
+      const j = await r.json(); if(j.errors) throw new Error(j.errors.map(e=>e.message).join('; ')); return j.data;
+    }catch(e){ if(i===1) throw e; await new Promise(r=>setTimeout(r,400*(i+1))); }
+  }
+}
+
+function applyMorphoData(w, d){
+  w.morpho = [];
+  if(!d) return;
+  const cname = (id,net) => (STATE?.chains?.find(c=>c.chainId===id)?.name) || CH_NAME[id] || net;
+  const cur = a => ({symbol:a.symbol, address:a.address, imageUrl:a.logoURI||''});
+  const row = (mk, a, amt, usd, apy, kind, coll) => {
+    const p = amt>0 ? usd/amt : (+a.price?.usd||0);
+    const o = {morpho:true, market:{address:mk.address, chain:{chainId:mk.chain.chainId}}, currency:cur(a), apy:{value:String(apy||0)}};
+    if(kind==='s'){ o.balance={amount:{value:String(amt)}, usd:String(usd), usdPerToken:String(p)}; o.isCollateral=!!coll; w.supplies.push(o); }
+    else { o.debt={amount:{value:String(amt)}, usd:String(usd), usdPerToken:String(p)}; w.borrows.push(o); }
+  };
+  for(const it of (d.marketPositions?.items||[])){
+    const M = it.market, S = it.state; if(!M.collateralAsset || !S) continue;
+    const ca = M.collateralAsset, la = M.loanAsset;
+    const coll = Number(S.collateral)/10**ca.decimals, sup = Number(S.supplyAssets)/10**la.decimals, bor = Number(S.borrowAssets)/10**la.decimals;
+    if(!(S.collateralUsd>0.5 || S.supplyAssetsUsd>0.5 || S.borrowAssetsUsd>0.5)) continue;
+    const lltv = Number(M.lltv)/1e18, cid = M.chain.id;
+    const mk = {protocol:'morpho', name:`Morpho ${ca.symbol}/${la.symbol}`, address:M.marketId, chain:{chainId:cid, name:cname(cid,M.chain.network)}, lltv,
+      reserves:[
+        {underlyingToken:{address:ca.address,symbol:ca.symbol,decimals:ca.decimals}, aToken:{address:'0x0'}, usdExchangeRate:String(ca.price?.usd||0), supplyInfo:{apy:{value:'0'}, liquidationThreshold:{value:String(lltv)}, maxLTV:{value:String(lltv)}}, borrowInfo:null, userState:null},
+        {underlyingToken:{address:la.address,symbol:la.symbol,decimals:la.decimals}, aToken:{address:'0x0'}, usdExchangeRate:String(la.price?.usd||0), supplyInfo:{apy:{value:String(M.state?.supplyApy||0)}, liquidationThreshold:{value:'0'}, maxLTV:{value:'0'}}, borrowInfo:{apy:{value:String(M.state?.borrowApy||0)}}, userState:null}]};
+    const C = S.collateralUsd||0, D = S.borrowAssetsUsd||0;
+    mk.userState = {netWorth:String(C+(S.supplyAssetsUsd||0)-D), healthFactor: D>0 && it.healthFactor!=null ? String(it.healthFactor) : null, eModeEnabled:false,
+      totalCollateralBase:String(C), totalDebtBase:String(D), availableBorrowsBase:String(Math.max(0,C*lltv-D)), netAPY:{value:'0'},
+      currentLiquidationThreshold:{value:String(lltv)}, ltv:{value:String(lltv)}};
+    if(coll>0) row(mk, ca, coll, C, 0, 's', true);
+    if(sup>0) row(mk, la, sup, S.supplyAssetsUsd, M.state?.supplyApy, 's', false);
+    if(bor>0) row(mk, la, bor, D, M.state?.borrowApy, 'd');
+    w.active.push(mk); w.morpho.push({type:'market', key:M.marketId, chainId:cid, mk});
+  }
+  for(const it of (d.vaultPositions?.items||[])){
+    const V = it.vault, S = it.state; if(!S || !(S.assetsUsd>0.5)) continue;
+    const a = V.asset, cid = V.chain.id, amt = Number(S.assets)/10**a.decimals;
+    const mk = {protocol:'morpho', name:`Morpho Vault ${V.name}`, address:V.address, chain:{chainId:cid, name:cname(cid,V.chain.network)}, lltv:0,
+      reserves:[{underlyingToken:{address:a.address,symbol:a.symbol,decimals:a.decimals}, aToken:{address:'0x0'}, usdExchangeRate:String(a.price?.usd||0), supplyInfo:{apy:{value:String(V.state?.netApy||0)}, liquidationThreshold:{value:'0'}, maxLTV:{value:'0'}}, borrowInfo:null, userState:null}],
+      userState:{netWorth:String(S.assetsUsd), healthFactor:null, eModeEnabled:false, totalCollateralBase:'0', totalDebtBase:'0', availableBorrowsBase:'0', netAPY:{value:String(V.state?.netApy||0)}, currentLiquidationThreshold:{value:'0'}, ltv:{value:'0'}}};
+    row(mk, a, amt, S.assetsUsd, V.state?.netApy, 's', false);
+    w.active.push(mk); w.morpho.push({type:'vault', key:V.address, chainId:cid, mk});
+  }
+}
+
+async function loadWalletCore(u, chainIds){
+  const [mRes, moRes] = await Promise.all([
+    gql(Q_MARKETS,{c:chainIds,u}),
+    mgql(Q_MORPHO,{u:[u]}).catch(e=>{ console.warn('morpho',e); return null; })
+  ]);
+  const markets = mRes.markets;
+  const active = markets.filter(m=>m.userState && (Math.abs(+m.userState.netWorth)>0.005 || +m.userState.totalCollateralBase>0.005 || +m.userState.totalDebtBase>0.005));
+  let supplies=[], borrows=[];
+  if(active.length){
+    const p = await gql(Q_POS,{u,ms:active.map(m=>({address:m.address,chainId:m.chain.chainId}))});
+    supplies=p.userSupplies; borrows=p.userBorrows;
+  }
+  const w = {addr:u, markets, active, supplies, borrows, hold:[], holdFail:[], v3hold:[], morphoFail:!moRes};
+  applyMorphoData(w, moRes);
+  return w;
+}
+
+async function loadAll(addrs){
+  $('#go').disabled = true; $('#out').innerHTML=''; LIQ = {}; renderLiqAlert();
+  try{
+    setStatus('Buscando Aave, Morpho e cotações…');
+    const brlPromise = fetchBrl().then(()=>updateTiles());
+    const chains = (await gql(Q_CHAINS)).chains.filter(c=>!c.isTestnet);
+    const chainIds = chains.map(c=>c.chainId);
+    const wallets = await pool(addrs, 4, async u => loadWalletCore(u, chainIds));
+    STATE = {wallets, chains};
+    refreshWbtcField();
+    renderAll();
+    setStatus('Lendo saldos das carteiras nas redes…');
+    await pool(wallets, 4, async w=>{
+      await fetchHoldings(w);
+      await synthMarkets(w);
+    });
+    await brlPromise;
+    renderAll();
+    const holdFail = [...new Set(wallets.flatMap(w=>w.holdFail).map(c=>BS_NAME[c]))];
+    setStatus(holdFail.length ? `Explorador indisponível em ${holdFail.join(', ')} (usada leitura direta via RPC).` : '');
+    $('#lastUpdate').textContent = 'Atualizado ' + new Date().toLocaleString('pt-BR');
+  }catch(e){ console.error(e); setStatus('Erro: '+e.message); }
+  $('#go').disabled = false;
+}
+
+function v3TokenSet(w, cid){
+  const s=new Set();
+  w.markets.filter(m=>m.chain.chainId===cid).forEach(m=>m.reserves.forEach(r=>{ s.add(r.aToken.address.toLowerCase()); if(r.vToken) s.add(r.vToken.address.toLowerCase()); }));
+  return s;
+}
+function classify(tok, cid, w){
+  const sym = tok.symbol||'', name = tok.name||'', addr = (tok.address_hash||tok.address||'').toLowerCase();
+  if(/^(variable|stable)debt/i.test(sym) || /(variable|stable) debt/i.test(name) || /^Aave (Matic Market|interest bearing|Avalanche Market|Polygon Market)/i.test(name)){
+    return {kind:'ignore', usym:sym, priceAddr:addr, addr};
+  }
+  const usym = sym.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT');
+  return {kind:'w', usym, priceAddr:addr, addr};
+}
+function v3TokenMap(w, cid){
+  const mp=new Map();
+  w.markets.filter(m=>m.chain.chainId===cid).forEach(m=>m.reserves.forEach(r=>{ mp.set(r.aToken.address.toLowerCase(),{m,r,kind:'s'}); if(r.vToken) mp.set(r.vToken.address.toLowerCase(),{m,r,kind:'d'}); }));
+  return mp;
+}
+
+const RPC = {1:'ethereum-rpc.publicnode.com',10:'optimism-rpc.publicnode.com',137:'polygon-bor-rpc.publicnode.com',8453:'base-rpc.publicnode.com',42161:'arbitrum-one-rpc.publicnode.com',324:'mainnet.era.zksync.io',42220:'forno.celo.org',1868:'rpc.soneium.org',57073:'rpc-gel.inkonchain.com',4326:'mainnet.megaeth.com/rpc',
+  43114:'avalanche-c-chain-rpc.publicnode.com',56:'bsc-rpc.publicnode.com',100:'gnosis-rpc.publicnode.com',534352:'scroll-rpc.publicnode.com',59144:'linea-rpc.publicnode.com',
+  146:'sonic-rpc.publicnode.com',5000:'mantle-rpc.publicnode.com',1088:'andromeda.metis.io/?owner=1088',9745:'rpc.plasma.to',196:'rpc.xlayer.tech',143:'rpc.monad.xyz'};
+const RPC_FALLBACK = {
+  8453:['base-rpc.publicnode.com','mainnet.base.org','base.drpc.org','1rpc.io/base','base.llamarpc.com'],
+  1:['ethereum-rpc.publicnode.com','eth.drpc.org','1rpc.io/eth','cloudflare-eth.com'],
+  42161:['arbitrum-one-rpc.publicnode.com','arb1.arbitrum.io/rpc','arbitrum.drpc.org'],
+  10:['optimism-rpc.publicnode.com','mainnet.optimism.io','optimism.drpc.org'],
+  137:['polygon-bor-rpc.publicnode.com','polygon-rpc.com','polygon.drpc.org'],
+  56:['bsc-rpc.publicnode.com','bsc-dataseed.binance.org','bsc.drpc.org'],
+  43114:['avalanche-c-chain-rpc.publicnode.com','api.avax.network/ext/bc/C/rpc','avax.drpc.org']
+};
+const ERC20_SEL = {
+  balanceOf: '0x70a08231',
+  decimals: '0x313ce567',
+  symbol: '0x95d89b41'
+};
+function decodeAbiString(hex){
+  if(typeof hex !== 'string' || !hex.startsWith('0x') || hex.length < 130) return '';
+  try{
+    const raw = hex.slice(2);
+    const len = Number(BigInt('0x' + raw.slice(64, 128)));
+    if(!(len > 0 && len <= 64)) return '';
+    const bytes = raw.slice(128, 128 + len * 2);
+    let out = '';
+    for(let i=0;i<bytes.length;i+=2){
+      const code = parseInt(bytes.slice(i,i+2), 16);
+      if(code >= 32 && code <= 126) out += String.fromCharCode(code);
+    }
+    return out.trim();
+  }catch(e){ return ''; }
+}
+function decodeAbiUint(hex){
+  if(typeof hex !== 'string' || !/^0x[0-9a-f]+$/i.test(hex)) return null;
+  try{ return Number(BigInt(hex)); }catch(e){ return null; }
+}
+
+const EXTRA_TOKENS = {
+  8453:[
+    {a:'0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',s:'USDC',d:6},
+    {a:'0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca',s:'USDbC',d:6},
+    {a:'0xfde4c96c8593536e31f229ea8f37b2ad2699bb66',s:'USDT',d:6},
+    {a:'0x4200000000000000000000000000000000000006',s:'WETH',d:18},
+    {a:'0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22',s:'cbETH',d:18},
+    {a:'0xc1cba3f3ea344323bd903db1654461851f277c1f',s:'wstETH',d:18},
+    {a:'0x04c0599ae5a44757c0af6f9ec3b93da8976c150a',s:'weETH',d:18},
+    {a:'0x50c5725949a6f0c72e6c4a641f24049a917db0cb',s:'DAI',d:18},
+    {a:'0x820c137fa70c8691f0e44dc420a5e53c168921dc',s:'USDS',d:18},
+    {a:'0x60a3e35cc301bca4889262009ca12893c5ca36f3',s:'EURC',d:6},
+    {a:'0x940181a94a35a4569e4529a3cdfb74e38fd98631',s:'AERO',d:18},
+    {a:'0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b',s:'VIRTUAL',d:18},
+    {a:'0x4ed4e862860bed51a9570b96d89af5e1b0efefed',s:'DEGEN',d:18},
+    {a:'0x532f27101965dd16442e59d40670faf5ebb142e4',s:'BRETT',d:18}
+  ],
+  1:[
+    {a:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',s:'USDC',d:6},
+    {a:'0xdac17f958d2ee523a2206206994597c13d831ec7',s:'USDT',d:6},
+    {a:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',s:'WBTC',d:8},
+    {a:'0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',s:'cbBTC',d:8},
+    {a:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',s:'WETH',d:18},
+    {a:'0x6b175474e89094c44da98b954eedeac495271d0f',s:'DAI',d:18}
+  ],
+  42161:[{a:'0xaf88d065e77c8cc2239327c5edb3a432268e5831',s:'USDC',d:6},{a:'0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',s:'USDC.e',d:6},{a:'0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',s:'USDT',d:6},{a:'0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f',s:'WBTC',d:8},{a:'0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',s:'cbBTC',d:8},{a:'0x82af49447d8a07e3bd95bd0d56f35241523fbab1',s:'WETH',d:18},{a:'0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',s:'DAI',d:18}],
+  10:[{a:'0x0b2c639c533813f4aa9d7837caf62653d097ff85',s:'USDC',d:6},{a:'0x7f5c764cbc14f9669b88837ca1490cca17c31607',s:'USDC.e',d:6},{a:'0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',s:'USDT',d:6},{a:'0x68f180fcce6836688e9084f035309e29bf0a2095',s:'WBTC',d:8},{a:'0x4200000000000000000000000000000000000006',s:'WETH',d:18},{a:'0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',s:'DAI',d:18}],
+  137:[{a:'0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',s:'USDC',d:6},{a:'0x2791bca1f2de4661ed88a30c99a7a9449aa84174',s:'USDC.e',d:6},{a:'0xc2132d05d31c914a87c6611c10748aeb04b58e8f',s:'USDT',d:6},{a:'0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6',s:'WBTC',d:8},{a:'0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',s:'WETH',d:18},{a:'0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',s:'WPOL',d:18}],
+  56:[{a:'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',s:'USDC',d:18},{a:'0x55d398326f99059ff775485246999027b3197955',s:'USDT',d:18},{a:'0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c',s:'BTCB',d:18},{a:'0x2170ed0880ac9a755fd29b2688956bd959f933f8',s:'ETH',d:18},{a:'0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',s:'WBNB',d:18}],
+  43114:[{a:'0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',s:'USDC',d:6},{a:'0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',s:'USDT',d:6},{a:'0x50b7545627a5162f82a992c33b87adc75187b218',s:'WBTC.e',d:8},{a:'0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',s:'WETH.e',d:18},{a:'0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',s:'WAVAX',d:18}],
+  100:[{a:'0xddafbb505ad214d7b80b1f830fccc89b60fb7a83',s:'USDC',d:6},{a:'0x4ecaba5870353805a9f068101a40e0f32ed605c6',s:'USDT',d:6},{a:'0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1',s:'WETH',d:18},{a:'0x8e5bbbb09ed1ebde8674cda39a0c169401db4252',s:'WBTC',d:8},{a:'0xe91d153e0b41518a2ce8dd3d7944fa863463a97d',s:'WXDAI',d:18}],
+  534352:[{a:'0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4',s:'USDC',d:6},{a:'0xf55bec9cafdbe8730f096aa55dad6d22d44099df',s:'USDT',d:6},{a:'0x3c1bca5a656e69edcd0d4e36bebb3fcdaca60cf1',s:'WBTC',d:8},{a:'0x5300000000000000000000000000000000000004',s:'WETH',d:18}],
+  59144:[{a:'0x176211869ca2b568f2a7d4ee941e073a821ee1ff',s:'USDC',d:6},{a:'0xa219439258ca9da29e9cc4ce5596924745e12b93',s:'USDT',d:6},{a:'0x3aab2285ddcddad8edf438c1bab47e1a9d05a9b4',s:'WBTC',d:8},{a:'0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f',s:'WETH',d:18}],
+  146:[{a:'0x29219dd400f2bf60e5a23d13be72b486d4038894',s:'USDC',d:6},{a:'0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38',s:'wS',d:18},{a:'0x50c42deacd8fc9773493ed674b675be577f2634b',s:'WETH',d:18}],
+  5000:[{a:'0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9',s:'USDC',d:6},{a:'0x201eba5cc46d216ce6dc03f6a759e8e766e956ae',s:'USDT',d:6},{a:'0xdeaddeaddeaddeaddeaddeaddeaddeaddead1111',s:'WMNT',d:18},{a:'0xddeaddeaddeaddeaddeaddeaddeaddeaddead0000',s:'WETH',d:18}],
+  324:[{a:'0x1d17cbcf0d6d143135ae902365d2e5e2a16538d4',s:'USDC',d:6},{a:'0x3355df6d4c9c3035724fd0e3914de96a5a83aaf4',s:'USDC.e',d:6},{a:'0x493257fd37edb34451f62edf8d2a0c418852ba4c',s:'USDT',d:6},{a:'0xbbeb516fb02a01611cbbe0453fe3c580d7281011',s:'WBTC',d:8},{a:'0x5aea5775959fbc2557cc8789bc1bf90a239d9a91',s:'WETH',d:18}],
+  9745:[{a:'0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb',s:'USDT0',d:6}]
+};
+
+async function ethCall(cid, to, data){
+  const endpoints = RPC_FALLBACK[cid] || (RPC[cid] ? [RPC[cid]] : []);
+  let lastErr = new Error('rpc');
+  for(const ep of endpoints){
+    try{
+      const r = await fetchT('https://'+ep,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to,data},'latest']})},5500);
+      const j = await r.json(); if(j.error||!j.result) throw new Error(j.error?.message||'rpc'); return j.result;
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr;
+}
+
+const CG_PLATFORM = {
+  1: 'ethereum',
+  8453: 'base',
+  42161: 'arbitrum-one',
+  10: 'optimistic-ethereum',
+  137: 'polygon-pos',
+  56: 'binance-smart-chain',
+  43114: 'avalanche',
+  100: 'xdai',
+  534352: 'scroll',
+  59144: 'linea',
+  146: 'sonic',
+  5000: 'mantle',
+  324: 'zksync',
+  42220: 'celo'
+};
+
+async function fetchNativeBalancesEvm(w, cids){
+  const byCid = new Map();
+  await pool(cids, 12, async cid => {
+    const res = await rpcBatch(cid, [{method:'eth_getBalance', params:[w.addr, 'latest']}]);
+    if(res && typeof res[0] === 'string' && /^0x[0-9a-f]+$/i.test(res[0]) && !/^0x0*$/.test(res[0])){
+      byCid.set(cid, Number(BigInt(res[0])) / 1e18);
+    }
+  });
+  return byCid;
+}
+
+async function fetchEvmExplorerTokens(addr, cid){
+  const host = BLOCKSCOUT[cid];
+  if(!host) return [];
+  const found = [];
+  const lower = addr.toLowerCase();
+  const pushTok = (address, sym, name, dec, rawVal, priceNow, icon, scam) => {
+    if(!address || !/^0x[0-9a-f]{40}$/i.test(address)) return;
+    const a = address.toLowerCase();
+    const d = Number.isFinite(+dec) && +dec >= 0 && +dec <= 36 ? +dec : 18;
+    const amt = Number(rawVal || 0) / 10**d;
+    if(!(amt > 0)) return;
+    const cleanSym = String(sym || 'TOKEN').trim() || 'TOKEN';
+    const usym = cleanSym.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT');
+    if(scam) return;
+    if(!priceNow && (!cleanSym || cleanSym.length>18 || /http|www\.|\.com|\.io|\.xyz|claim|airdrop|voucher|reward/i.test(cleanSym + ' ' + String(name||'')))) return;
+    const prev = found.find(x => x.addr === a);
+    if(prev){
+      if(amt > prev.amt) prev.amt = amt;
+      if(!prev.priceNow && priceNow > 0) prev.priceNow = priceNow;
+      return;
+    }
+    found.push({
+      addr: a,
+      sym: cleanSym,
+      usym,
+      dec: d,
+      amt,
+      priceNow: isPureStable(usym) ? (+priceNow || 0) : 0,
+      icon: icon || `https://token-logos.family.co/asset?id=${cid}:${a}&token=${encodeURIComponent(cleanSym)}`,
+      scam: false
+    });
+  };
+
+  try{
+    let next = null;
+    for(let p=0; p<15; p++){
+      const j = await bsGet(host, `/addresses/${lower}/tokens`, {type:'ERC-20', ...(next||{})});
+      for(const item of (j?.items||[])){
+        const tok = item.token || {};
+        pushTok(tok.address_hash || tok.address, tok.symbol, tok.name, tok.decimals, item.value, +tok.exchange_rate || 0, tok.icon_url, tok.reputation === 'scam');
+      }
+      if(!j?.next_page_params) break;
+      next = j.next_page_params;
+    }
+  }catch(_e){}
+
+  try{
+    const r = await fetchT(`https://${host}/api?module=account&action=tokentx&address=${lower}&page=1&offset=300`, {},6500);
+    if(r.ok){
+      const j = await r.json();
+      if(Array.isArray(j?.result)){
+        const candidateMap = new Map();
+        for(const tx of j.result){
+          const contract = (tx.contractAddress || '').toLowerCase();
+          if(!contract || found.some(x => x.addr === contract) || candidateMap.has(contract)) continue;
+          candidateMap.set(contract, {
+            sym: tx.tokenSymbol || 'TOKEN',
+            name: tx.tokenName || '',
+            dec: +tx.tokenDecimal || 18
+          });
+        }
+        const candList = [...candidateMap.entries()];
+        if(candList.length){
+          const pad = lower.replace('0x','').padStart(64,'0');
+          const balRes = await rpcBatch(cid, candList.map(([contract]) => ({
+            method:'eth_call', params:[{to:contract, data:ERC20_SEL.balanceOf+pad},'latest']
+          }))) || [];
+          const activeCands = [];
+          candList.forEach(([contract, meta], idx) => {
+            const bHex = balRes[idx];
+            if(typeof bHex === 'string' && /^0x[0-9a-f]+$/i.test(bHex) && !/^0x0*$/.test(bHex)){
+              activeCands.push({contract, meta, rawBal: BigInt(bHex)});
+            }
+          });
+          if(activeCands.length){
+            const metaReqs = [];
+            for(const ac of activeCands){
+              metaReqs.push({method:'eth_call', params:[{to:ac.contract, data:ERC20_SEL.symbol},'latest']});
+              metaReqs.push({method:'eth_call', params:[{to:ac.contract, data:ERC20_SEL.decimals},'latest']});
+            }
+            const metaRes = await rpcBatch(cid, metaReqs) || [];
+            activeCands.forEach((ac, idx) => {
+              const sym = decodeAbiString(metaRes[idx*2]) || ac.meta.sym;
+              const decVal = decodeAbiUint(metaRes[idx*2+1]);
+              const dec = (decVal != null && decVal >= 0 && decVal <= 36) ? decVal : ac.meta.dec;
+              pushTok(ac.contract, sym, ac.meta.name, dec, ac.rawBal.toString(), 0, '', false);
+            });
+          }
+        }
+      }
+    }
+  }catch(_e){}
+
+  return found;
+}
+
+async function synthMarkets(w){
+  const byMarket = new Map();
+  for(const x of w.v3hold){
+    if(w.active.includes(x.m)) continue;
+    if(!byMarket.has(x.m)) byMarket.set(x.m, []); byMarket.get(x.m).push(x);
+  }
+  for(const [m, xs] of byMarket){
+    const cur = r => ({symbol:r.underlyingToken.symbol, address:r.underlyingToken.address, imageUrl:`https://token-logos.family.co/asset?id=${m.chain.chainId}:${r.underlyingToken.address}&token=${encodeURIComponent(r.underlyingToken.symbol)}`});
+    for(const x of xs){
+      const p = +x.r.usdExchangeRate||0;
+      if(x.kind==='s') w.supplies.push({synthetic:true, market:{address:m.address,chain:{chainId:m.chain.chainId}}, currency:cur(x.r), balance:{amount:{value:String(x.amt)}, usd:String(x.amt*p), usdPerToken:String(p)}, apy:{value:x.r.supplyInfo?.apy?.value||'0'}, isCollateral:+x.r.supplyInfo?.liquidationThreshold?.value>0});
+      else w.borrows.push({synthetic:true, market:{address:m.address,chain:{chainId:m.chain.chainId}}, currency:cur(x.r), debt:{amount:{value:String(x.amt)}, usd:String(x.amt*p), usdPerToken:String(p)}, apy:{value:x.r.borrowInfo?.apy?.value||'0'}});
+    }
+    const sup = w.supplies.filter(s=>s.synthetic&&sameAddr(s.market.address,m.address)), bor = w.borrows.filter(b=>b.synthetic&&sameAddr(b.market.address,m.address));
+    const C = sup.filter(s=>s.isCollateral).reduce((a,s)=>a+ +s.balance.usd,0), D = bor.reduce((a,b)=>a+ +b.debt.usd,0);
+    let us = {netWorth:String(sup.reduce((a,s)=>a+ +s.balance.usd,0)-D), healthFactor: D>0 ? String(sup.filter(s=>s.isCollateral).reduce((a,s)=>a+ +s.balance.usd*ltOf({...m,userState:{eModeEnabled:false}},s.currency.address),0)/D) : null,
+      eModeEnabled:false, totalCollateralBase:String(C), totalDebtBase:String(D), availableBorrowsBase:'0', netAPY:{value:'0'}, currentLiquidationThreshold:{value:'0'}, ltv:{value:'0'}};
+    try{
+      const pad = w.addr.toLowerCase().replace('0x','').padStart(64,'0');
+      const [resRaw, emRaw] = await Promise.all([
+        ethCall(m.chain.chainId, m.address, '0xbf92857c'+pad),
+        ethCall(m.chain.chainId, m.address, '0xeddf1b79'+pad)
+      ]);
+      const res = resRaw.slice(2);
+      const word = i => BigInt('0x'+res.slice(i*64,(i+1)*64));
+      const em = Number(BigInt(emRaw));
+      const hf = word(5);
+      us = {...us, totalCollateralBase:String(Number(word(0))/1e8), totalDebtBase:String(Number(word(1))/1e8), availableBorrowsBase:String(Number(word(2))/1e8),
+        currentLiquidationThreshold:{value:String(Number(word(3))/1e4)}, ltv:{value:String(Number(word(4))/1e4)},
+        healthFactor: hf > 10n**30n ? null : String(Number(hf/10n**12n)/1e6), eModeEnabled: em>0};
+    }catch(e){ console.warn('rpc', m.chain.name, e); }
+    const earn = sup.reduce((a,s)=>a+ +s.balance.usd*+s.apy.value,0) - bor.reduce((a,b)=>a+ +b.debt.usd*+b.apy.value,0);
+    const net = sup.reduce((a,s)=>a+ +s.balance.usd,0)-D;
+    us.netWorth = String(net); us.netAPY = {value:String(net>0?earn/net:0)};
+    m.userState = us; m.synthetic = true;
+    w.active.push(m);
+  }
+}
+
+async function rpcBatch(cid, reqs){
+  const endpoints = RPC_FALLBACK[cid] || (RPC[cid] ? [RPC[cid]] : []);
+  if(!endpoints.length || !reqs.length) return null;
+  for(const ep of endpoints){
+    try{
+      const out = [];
+      const chunks = [];
+      for(let i=0;i<reqs.length;i+=60) chunks.push({start:i, items:reqs.slice(i,i+60)});
+      await pool(chunks, 3, async ch => {
+        const payload = ch.items.map((r,k)=>({jsonrpc:'2.0', id:ch.start+k, method:r.method, params:r.params}));
+        const res = await fetchT('https://'+ep,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)},6500);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const j = await res.json();
+        const arr = Array.isArray(j) ? j : (j && j.result!==undefined ? [j] : []);
+        for(const x of arr){
+          if(x && typeof x.id === 'number' && x.result !== undefined) out[x.id] = x.result;
+        }
+      });
+      if(out.some(v => v !== undefined)) return out;
+    }catch(e){ console.warn('rpcBatch fallback', cid, ep, e); }
+  }
+  return null;
+}
+
+async function fetchHoldings(w){
+  w.hold=[]; w.holdFail=[]; w.v3hold=[];
+  const nativeMap = await fetchNativeBalancesEvm(w, EVM_ALL_CHAINS);
+  for(const [cid, amt] of nativeMap.entries()){
+    const n = NATIVE[cid];
+    if(n && amt > 0){
+      w.hold.push({chainId:cid, kind:'w', isNative:true, sym:n.sym, usym:n.sym, coin:n.coin, addr:'native', dec:18, amt, priceNow:0, verified:true});
+    }
+  }
+  await Promise.all([
+    pool(Object.keys(BLOCKSCOUT).map(Number), 10, async cid=>{
+      const host = BLOCKSCOUT[cid];
+      try{
+        const [infoRes, toksRes] = await Promise.allSettled([
+          bsGet(host,`/addresses/${w.addr}`),
+          bsPaged(host,`/addresses/${w.addr}/tokens`,{type:'ERC-20'},15)
+        ]);
+        const info = infoRes.status==='fulfilled' ? infoRes.value : null;
+        const toks = toksRes.status==='fulfilled' ? toksRes.value : null;
+        if(!info && !toks) throw new Error('ambos falharam');
+        if(toksRes.status==='rejected') w.holdFail.push(cid);
+        const v3 = v3TokenSet(w, cid);
+        if(info && +info.coin_balance>0){
+          const n = NATIVE[cid];
+          const natAmt = +info.coin_balance/1e18;
+          const existingNat = w.hold.find(h=>h.chainId===cid && h.isNative);
+          if(existingNat){
+            if(natAmt > 0) existingNat.amt = natAmt;
+            if(+info.exchange_rate > 0) existingNat.priceNow = +info.exchange_rate;
+            existingNat.verified = true;
+          }else if(n){
+            w.hold.push({chainId:cid, kind:'w', isNative:true, sym:n.sym, usym:n.sym, coin:n.coin, addr:'native', dec:18, amt:natAmt, priceNow:+info.exchange_rate||0, verified:true});
+          }
+        }
+        const v3map = v3TokenMap(w, cid);
+        for(const t of (toks||[])){
+          const tok=t.token; if(!tok) continue;
+          const c = classify(tok, cid, w);
+          if(c.kind==='ignore') continue;
+          if(v3.has(c.addr)){
+            const x = v3map.get(c.addr); const amt = Number(t.value)/10**(+tok.decimals||18);
+            if(x && amt>0) w.v3hold.push({...x, chainId:cid, amt, tokAddr:c.addr, dec:+tok.decimals||18});
+            continue;
+          }
+          if(tok.reputation==='scam') continue;
+          if(!tok.exchange_rate && (!tok.symbol || tok.symbol.length>18 || /http|www\.|\.com|\.io|\.xyz|claim|airdrop|voucher|reward/i.test((tok.symbol||'')+(tok.name||'')))) continue;
+          const amt = Number(t.value)/10**(+tok.decimals||18); if(!(amt>0)) continue;
+          const expPx = isPureStable(c.usym) ? (+tok.exchange_rate||0) : 0;
+          w.hold.push({chainId:cid, kind:'w', sym:tok.symbol, usym:c.usym, addr:c.addr, priceAddr:c.priceAddr, icon:tok.icon_url, dec:+tok.decimals||18, amt, priceNow:expPx});
+        }
+        await verifyBalances(w, cid);
+      }catch(e){ w.holdFail.push(cid); }
+    }),
+    rpcScan(w),
+    pool(Object.keys(BLOCKSCOUT).map(Number), 10, async cid=>{
+      const evmExtra = await fetchEvmExplorerTokens(w.addr, cid);
+      for(const b of evmExtra){
+        if(b.scam) continue;
+        const idx = w.hold.findIndex(h=>h.chainId===cid && sameAddr(h.addr, b.addr));
+        if(idx === -1){
+          w.hold.push({
+            chainId:cid, kind:'w', sym:b.sym, usym:b.usym, addr:b.addr, priceAddr:b.addr,
+            icon:b.icon || `https://token-logos.family.co/asset?id=${cid}:${b.addr}&token=${encodeURIComponent(b.sym)}`,
+            dec:b.dec, amt:b.amt, priceNow:isPureStable(b.usym)?b.priceNow:0, verified:true
+          });
+        }else if(b.amt > 0){
+          w.hold[idx].amt = b.amt;
+          w.hold[idx].verified = true;
+        }
+      }
+    })
+  ]);
+  await refreshHoldPrices([w]);
+  w.hold = w.hold.filter(h => h.priceNow > 0 || isWbtc(h.usym) || (EVM_ALL_CHAINS.includes(h.chainId) && h.amt>0));
+  {
+    const seen = new Set();
+    w.hold = w.hold.filter(h=>{
+      if(h.kind!=='w') return true;
+      const k = `${h.chainId}|${h.addr==='native'?'native':h.addr}`;
+      if(seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }
+}
+
+async function verifyBalances(w, cid){
+  const items = [...w.hold.filter(h=>h.chainId===cid && !h.verified), ...w.v3hold.filter(h=>h.chainId===cid && !h.verified)];
+  if(!items.length) return;
+  const pad = w.addr.toLowerCase().replace('0x','').padStart(64,'0');
+  const reqs = items.map(h => h.isNative
+    ? {method:'eth_getBalance', params:[w.addr,'latest']}
+    : {method:'eth_call', params:[{to:h.tokAddr||h.addr, data:ERC20_SEL.balanceOf+pad},'latest']});
+  const res = await rpcBatch(cid, reqs);
+  if(!res) return;
+  items.forEach((h,k)=>{
+    const r = res[k];
+    if(typeof r!=='string' || !/^0x[0-9a-f]*$/i.test(r)) return;
+    h.amt = r==='0x' ? 0 : Number(BigInt(r))/10**(h.dec||18);
+    h.verified = true;
+  });
+  w.hold = w.hold.filter(h=>h.chainId!==cid || h.amt>0);
+  w.v3hold = w.v3hold.filter(h=>h.chainId!==cid || h.amt>0);
+}
+
+async function rpcScan(w){
+  const pad = w.addr.toLowerCase().replace('0x','').padStart(64,'0');
+  const cids = [...new Set([...EVM_ALL_CHAINS, ...Object.keys(RPC).map(Number), ...Object.keys(RPC_FALLBACK).map(Number), ...Object.keys(EXTRA_TOKENS).map(Number)])];
+  await pool(cids, 12, async cid=>{
+    const have = w.hold.filter(h=>h.chainId===cid && h.kind==='w');
+    const cands = [];
+    const n = NATIVE[cid];
+    if(n && !have.some(h=>h.isNative)) cands.push({native:true, n});
+    const seen = new Set(have.map(h=>(h.addr||'').toLowerCase()).filter(a=>a && a!=='native'));
+    for(const ex of (EXTRA_TOKENS[cid]||[])){
+      const a = ex.a.toLowerCase();
+      if(seen.has(a)) continue;
+      seen.add(a);
+      cands.push({addr:a, sym:ex.s, usym:ex.s.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT'), dec:ex.d, priceNow:0});
+    }
+    for(const r of w.markets.filter(m=>m.chain.chainId===cid).flatMap(m=>m.reserves)){
+      const a = r.underlyingToken.address.toLowerCase();
+      if(seen.has(a)) continue;
+      seen.add(a);
+      cands.push({addr:a, sym:r.underlyingToken.symbol, usym:r.underlyingToken.symbol.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT'), dec:r.underlyingToken.decimals||18, priceNow:+r.usdExchangeRate||0});
+    }
+    for(const mo of (w.morpho||[]).filter(x=>x.chainId===cid)){
+      for(const r of (mo.mk?.reserves||[])){
+        const a = r.underlyingToken.address.toLowerCase();
+        if(seen.has(a)) continue;
+        seen.add(a);
+        cands.push({addr:a, sym:r.underlyingToken.symbol, usym:r.underlyingToken.symbol.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT'), dec:r.underlyingToken.decimals||18, priceNow:+r.usdExchangeRate||0});
+      }
+    }
+    if(!cands.length) return;
+    const reqs = cands.map(c => c.native
+      ? {method:'eth_getBalance', params:[w.addr,'latest']}
+      : {method:'eth_call', params:[{to:c.addr, data:ERC20_SEL.balanceOf+pad},'latest']});
+    const res = await rpcBatch(cid, reqs);
+    if(!res) return;
+    const nonZero = [];
+    cands.forEach((c,k)=>{
+      const x = res[k];
+      if(typeof x!=='string' || !/^0x[0-9a-f]+$/i.test(x) || /^0x0*$/.test(x)) return;
+      if(c.native){
+        const amt = Number(BigInt(x))/1e18;
+        if(amt>0) w.hold.push({chainId:cid, kind:'w', isNative:true, sym:c.n.sym, usym:c.n.sym, coin:c.n.coin, addr:'native', dec:18, amt, priceNow:0, verified:true});
+        return;
+      }
+      nonZero.push({c, rawBal:BigInt(x)});
+    });
+    if(nonZero.length){
+      const metaReqs = [];
+      for(const item of nonZero){
+        metaReqs.push({method:'eth_call', params:[{to:item.c.addr, data:ERC20_SEL.symbol},'latest']});
+        metaReqs.push({method:'eth_call', params:[{to:item.c.addr, data:ERC20_SEL.decimals},'latest']});
+      }
+      const metaRes = await rpcBatch(cid, metaReqs) || [];
+      nonZero.forEach((item, idx)=>{
+        const symHex = metaRes[idx*2];
+        const decHex = metaRes[idx*2+1];
+        const sym = decodeAbiString(symHex) || item.c.sym;
+        const decVal = decodeAbiUint(decHex);
+        const dec = (decVal != null && decVal >= 0 && decVal <= 36) ? decVal : (item.c.dec || 18);
+        const amt = Number(item.rawBal) / 10**dec;
+        if(!(amt>0)) return;
+        const usym = sym.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT');
+        w.hold.push({chainId:cid, kind:'w', sym, usym, addr:item.c.addr, priceAddr:item.c.addr, icon:`https://token-logos.family.co/asset?id=${cid}:${item.c.addr}&token=${sym}`, dec, amt, priceNow:item.c.priceNow, verified:true});
+      });
+    }
+  });
+}
+
+async function refreshHoldPrices(wallets){
+  const hs = wallets.flatMap(w=>w.hold);
+  if(!hs.length) return false;
+  const idOf = h => h.isNative ? h.coin : pcoin(h.chainId, h.priceAddr||h.addr);
+  const symCoin = sym => {
+    const u = (sym||'').toUpperCase().replace(/\.E$/,'').replace(/^USDT0$/,'USDT');
+    if(/DOGE/i.test(u)) return 'coingecko:dogecoin';
+    if(/^(USDC|USDT|DAI|GHO|USDS|USDBC|PYUSD|LUSD|FRAX|XDAI|WXDAI)$/.test(u)) return 'STABLE';
+    if(/^(W?ETH|ETH)$/.test(u)) return 'coingecko:ethereum';
+    if(isWbtc(u)) return 'coingecko:bitcoin';
+    if(u==='CBETH') return 'coingecko:coinbase-wrapped-staked-eth';
+    if(u==='WSTETH') return 'coingecko:wrapped-steth';
+    if(u==='WEETH') return 'coingecko:wrapped-eeth';
+    if(u==='EURC') return 'coingecko:euro-coin';
+    if(u==='AERO') return 'coingecko:aerodrome-finance';
+    if(u==='VIRTUAL') return 'coingecko:virtual-protocol';
+    if(u==='DEGEN') return 'coingecko:degen-base';
+    if(u==='BRETT') return 'coingecko:based-brett';
+    if(/^(POL|WPOL|MATIC|WMATIC)$/.test(u)) return 'coingecko:polygon-ecosystem-token';
+    if(/^(BNB|WBNB)$/.test(u)) return 'coingecko:binancecoin';
+    if(/^(AVAX|WAVAX)$/.test(u)) return 'coingecko:avalanche-2';
+    if(/^(S|WS)$/.test(u)) return 'coingecko:sonic-3';
+    if(/^(MNT|WMNT)$/.test(u)) return 'coingecko:mantle';
+    return null;
+  };
+  const ids = [...new Set([
+    ...hs.map(idOf).filter(Boolean),
+    ...hs.map(h=>symCoin(h.usym||h.sym)).filter(x=>x && x!=='STABLE')
+  ])];
+  const px = {};
+  await pool(Array.from({length:Math.ceil(ids.length/60)},(_,k)=>ids.slice(k*60,(k+1)*60)), 6, async chunk=>{
+    try{
+      const j = await (await fetchT('https://coins.llama.fi/prices/current/'+chunk.join(','),{cache:'no-store'},6500)).json();
+      for(const [k,v] of Object.entries(j.coins||{})) if(v.price>0) px[k.toLowerCase()] = v.price;
+    }catch(e){}
+  });
+  const missingContracts = hs.filter(h => !h.isNative && h.addr && h.addr !== 'native' && CG_PLATFORM[h.chainId] && !px[(idOf(h)||'').toLowerCase()]);
+  await pool(missingContracts, 8, async h => {
+    const plat = CG_PLATFORM[h.chainId];
+    const addr = (h.priceAddr || h.addr).toLowerCase();
+    try{
+      const r = await fetchT(`https://api.coingecko.com/api/v3/simple/token_price/${plat}?contract_addresses=${addr}&vs_currencies=usd`, {},5500);
+      if(r.ok){
+        const j = await r.json();
+        const usd = j?.[addr]?.usd;
+        if(usd > 0) px[(idOf(h)||'').toLowerCase()] = +usd;
+      }
+    }catch(_e){}
+  });
+  let changed = false;
+  for(const h of hs){
+    const sc = symCoin(h.usym||h.sym);
+    const p = px[(idOf(h)||'').toLowerCase()] || (sc==='STABLE' ? 1 : sc ? px[sc.toLowerCase()] : 0);
+    if(p && Math.abs(p-(h.priceNow||0))>1e-9){ h.priceNow = p; h.pxSrc = 'DefiLlama'; changed = true; }
+  }
+  return changed;
+}
+
+const ETH_LIKE = /^(W?ETH|STETH|WSTETH|WEETH|EETH|RSETH|WRSETH|EZETH|CBETH|RETH|OSETH|ETHX|METH|CMETH|RSWETH|TETH|ETH\.E|WETH\.E)$/i;
+function priceGroup(sym, price){
+  if(isWbtc(sym)) return 'BTC';
+  if(ETH_LIKE.test(sym)) return 'ETH';
+  if(isPureStable(sym) && price>0.9 && price<1.25) return null;
+  return (sym||'').toUpperCase();
+}
+const hfClass = h => h==null || !isFinite(h) ? 'hf-good' : h<1.1 ? 'hf-bad' : h<1.5 ? 'hf-warn' : 'hf-good';
+const hfTxt = h => h==null || !isFinite(h) || h>1e6 ? '∞' : h.toLocaleString('pt-BR',{maximumFractionDigits:2,minimumFractionDigits:2});
+
+function reserveOf(m, addr){ return m.reserves.find(r=>sameAddr(r.underlyingToken.address,addr)); }
+function ltOf(m, addr){ const r=reserveOf(m,addr); if(!r) return 0; if(m.userState?.eModeEnabled && r.userState?.emode) return +r.userState.emode.liquidationThreshold.value; return +r.supplyInfo.liquidationThreshold.value; }
+function ltvOf(m, addr){ const r=reserveOf(m,addr); if(!r) return 0; if(m.userState?.eModeEnabled && r.userState?.emode?.maxLTV) return +r.userState.emode.maxLTV.value; return +r.supplyInfo.maxLTV.value; }
+
+function marketView(m, ms, mb){
+  const us=m.userState || {healthFactor:null,totalCollateralBase:'0',totalDebtBase:'0',availableBorrowsBase:'0',eModeEnabled:false,ltv:{value:'0'},currentLiquidationThreshold:{value:'0'}};
+  const hf0 = us.healthFactor==null ? null : +us.healthFactor;
+  let dC=0, dCl=0, Cw0=0, Cw1=0, D0=0, D1=0;
+  for(const s of ms){ const u0=+s.balance.usd, u1=rowUsd(s); if(s.isCollateral){ dC+=u1-u0; const lt=ltOf(m,s.currency.address); Cw0+=u0*lt; Cw1+=u1*lt; dCl+=(u1-u0)*ltvOf(m,s.currency.address); } }
+  for(const b of mb){ D0+=+b.debt.usd; D1+=rowUsd(b); }
+  const hf = hf0==null ? null : (Cw0>0 && D0>0 && D1>0 ? hf0*(Cw1/Cw0)/(D1/D0) : hf0);
+  return {hf, coll:+us.totalCollateralBase+dC, debt:+us.totalDebtBase+(D1-D0), avail:Math.max(0,+us.availableBorrowsBase+dCl-(D1-D0))};
+}
+
+const SMALL_AAVE = 1, SMALL_WALLET = 0.1;
+let HIDE_SMALL_WALLET = true;
+function collectCards(){
+  const cards=[];
+  for(const w of onWallets()) for(const m of w.active){
+    const ms = w.supplies.filter(s=>sameAddr(s.market.address,m.address)&&s.market.chain.chainId===m.chain.chainId);
+    const mb = w.borrows.filter(s=>sameAddr(s.market.address,m.address)&&s.market.chain.chainId===m.chain.chainId);
+    if(![...ms,...mb].some(r=>rowUsd(r)>=SMALL_AAVE)) continue;
+    cards.push({w,m,ms,mb,view:marketView(m,ms,mb)});
+  }
+  return cards;
+}
+
+function netApy(sups, bors){
+  const s = sups.reduce((a,x)=>a+x.usd,0), d = bors.reduce((a,x)=>a+x.usd,0);
+  const earn = sups.reduce((a,x)=>a+x.usd*x.apy,0) - bors.reduce((a,x)=>a+x.usd*x.apy,0);
+  return {earn, net:s-d, apy: s-d>0 ? earn/(s-d) : null};
+}
+const supItems = ms => ms.map(s=>({usd:rowUsd(s), apy:+s.apy.value}));
+const borItems = mb => mb.map(b=>({usd:rowUsd(b), apy:+b.apy.value}));
+
+let SIM_DELTA = {}, TILE_BASE = null, SIM_Q = {}, SIM_ADD = {}, SW_FORM = {}, SWAPS = {}, LIQ = {};
+
+function updateTiles(){
+  const el = $('#tiles'); if(!el || !TILE_BASE) return;
+  const B = TILE_BASE; let dS=0, dD=0, dE=0;
+  for(const k in SIM_DELTA){ dS+=SIM_DELTA[k].dS; dD+=SIM_DELTA[k].dD; dE+=SIM_DELTA[k].dE; }
+  const simOn = Math.abs(dS)+Math.abs(dD)+Math.abs(dE) > 0.005;
+  const sup=B.S+dS, debt=B.D+dD, earn=B.E+dE, net=sup-debt;
+  const aaveNet = net, total = aaveNet+B.wal, btc = btcNow();
+  const apy = net>0 ? earn/net : null;
+  const tag = simOn ? ' <span class="pill" style="border-color:var(--warn);color:var(--warn)">simulado</span>' : '';
+  el.innerHTML = `
+    <div class="tile"><div class="l">Patrimônio total${tag}</div>${valBlock(total,btc)}</div>
+    <div class="tile"><div class="l">Em plataformas (líquido)${tag}</div>${valBlock(aaveNet,btc)}</div>
+    <div class="tile"><div class="l">Em carteira</div>${valBlock(B.wal,btc)}</div>
+    <div class="tile"><div class="l">Depositado${tag}</div>${valBlock(sup,btc)}</div>
+    <div class="tile"><div class="l">Emprestado${tag}</div>${valBlock(debt,btc)}</div>
+    <div class="tile"><div class="l">APY líquido médio${tag}</div><div class="v ${earn>=0?'pos':'neg'}">${apy==null?'—':fmtPct(apy)}</div></div>`;
+}
+
+function assetCell(cur){ const u = safeUrl(cur.imageUrl); return `<div class="asset">${u?`<img src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:''}${esc(cur.symbol)}</div>`; }
+const wbtcMark = sym => MANUAL_WBTC && isWbtc(sym) ? ' <span class="pill" title="preço manual">manual</span>' : '';
+
+function marketCard({w,m,ms,mb,view},i){
+  const us=m.userState||{ltv:{value:'0'},currentLiquidationThreshold:{value:'0'},eModeEnabled:false};
+  const multi=onWallets().length>1;
+  const na = netApy(supItems(ms), borItems(mb));
+  const protoLabel = m.protocol==='morpho' ? 'Morpho' : m.name.replace(/^AaveV3/,'Aave v3 ');
+  return `<div class="card">
+   <div class="mkt-head"><h2>${esc(m.chain.name)} · ${esc(protoLabel)}</h2>
+     <span class="hint">${multi?`<b>${wNameH(w.addr)}</b> · `:''}${m.protocol==='morpho'&&m.lltv?`<span class="pill">LLTV ${fmtPct(m.lltv,0)}</span> `:''}${m.synthetic?'<span class="pill">lido on-chain</span> ':''}${us.eModeEnabled?'<span class="pill">E-Mode</span>':''}</span></div>
+   <div class="mkt-stats" id="ms${i}">
+     <div><div class="l">Health Factor</div><div class="v ${hfClass(view.hf)}">${hfTxt(view.hf)}</div></div>
+     <div><div class="l">Colateral</div><div class="v">${fmtUsd(view.coll,0)}</div></div>
+     <div><div class="l">Dívida</div><div class="v">${fmtUsd(view.debt,0)}</div></div>
+     <div><div class="l">Disponível p/ emprestar</div><div class="v">${fmtUsd(view.avail,0)}</div></div>
+     <div><div class="l">LTV / Liq. threshold</div><div class="v">${fmtPct(+(us.ltv?.value||0),0)} / ${fmtPct(+(us.currentLiquidationThreshold?.value||0),0)}</div></div>
+     <div><div class="l">APY líquido</div><div class="v ${na.earn>=0?'pos':'neg'}">${na.apy==null?'—':fmtPct(na.apy)}</div></div>
+   </div>
+   <div class="sim" id="sim${i}"></div>
+  </div>`;
+}
+
+function scanCard(){
+  const ws = STATE?.wallets || [];
+  if(!ws.length || !ws.some(w=>w.hold.length||w.holdFail.length)) return '';
+  const ids = [...new Set([...(STATE.chains||[]).map(c=>c.chainId), ...EVM_ALL_CHAINS, ...Object.keys(RPC).map(Number), ...Object.keys(BLOCKSCOUT).map(Number)])];
+  const nm = id => CH_NAME[id] || ((STATE.chains||[]).find(c=>c.chainId===id)||{}).name || id;
+  const cell = (w, cid) => {
+    const rows = r => r.market?.chain?.chainId===cid;
+    const aave = w.supplies.filter(r=>rows(r)&&!r.morpho).reduce((a,r)=>a+rowUsd(r),0) - w.borrows.filter(r=>rows(r)&&!r.morpho).reduce((a,r)=>a+rowUsd(r),0);
+    const morpho = w.supplies.filter(r=>rows(r)&&r.morpho).reduce((a,r)=>a+rowUsd(r),0) - w.borrows.filter(r=>rows(r)&&r.morpho).reduce((a,r)=>a+rowUsd(r),0);
+    const hs = w.hold.filter(h=>h.chainId===cid);
+    const wal = hs.filter(h=>h.kind==='w').reduce((a,h)=>a+holdUsd(h),0);
+    const parts = [];
+    if(Math.abs(aave)>=0.5) parts.push(`Aave ${fmtUsd(aave,0)}`);
+    if(Math.abs(morpho)>=0.5) parts.push(`Morpho ${fmtUsd(morpho,0)}`);
+    if(wal>=0.01) parts.push(`carteira ${fmtUsd(wal, wal<10?2:0)}`);
+    const fail = w.holdFail.includes(cid) ? ' <span class="hint">· via RPC</span>' : '';
+    const total = aave+morpho+wal;
+    return {total, html: parts.length ? parts.join(' · ')+fail : `<span class="hint">vazio ✓</span>`};
+  };
+  const data = ids.map(cid=>({cid, cells: ws.map(w=>cell(w,cid))})).map(r=>({...r, tot:r.cells.reduce((a,c)=>a+Math.abs(c.total),0)}))
+    .sort((a,b)=>(b.tot>=0.5)-(a.tot>=0.5) || b.tot-a.tot || String(nm(a.cid)).localeCompare(String(nm(b.cid))));
+  const src = cid => [(STATE.chains||[]).some(c=>c.chainId===cid)?'Aave':'', BLOCKSCOUT[cid]?'explorador':'', RPC[cid]?'blockchain':''].filter(Boolean).join(' + ');
+  const used = data.filter(r=>r.tot>=0.5).length;
+  return `<details class="card" id="scanCard"><summary><b>Cobertura do scan</b> <span class="hint">${data.length} redes × ${ws.length} carteira(s) · ${used} rede(s) com saldo · Morpho lido em todas as redes</span></summary>
+    <div class="tblwrap"><table><caption class="sr-only">Cobertura do scan por rede</caption><thead><tr><th scope="col">Rede</th>${ws.map(w=>`<th scope="col" style="text-align:left">${wNameH(w.addr)}${isOn(w.addr)?'':' (desligada)'}</th>`).join('')}<th scope="col">Fontes</th></tr></thead>
+    <tbody>${data.map(r=>`<tr><td>${esc(nm(r.cid))}</td>${r.cells.map(c=>`<td style="text-align:left;white-space:normal">${c.html}</td>`).join('')}<td class="hint">${src(r.cid)}</td></tr>`).join('')}</tbody></table></div></details>`;
+}
+
+function holdingsCard(){
+  const hold = onWallets().flatMap(w=>w.hold.map(h=>({...h,w})));
+  const loaded = STATE.wallets.some(w=>w.hold.length||w.holdFail.length);
+  if(!loaded) return `<div class="card" id="holdCard"><h2>Carteira</h2><div class="empty">Carregando…</div></div>`;
+  const multi = onWallets().length>1;
+  const baseFiltered = hold.filter(h => !(h.chainId === 8453 && String(h.sym || h.usym || '').trim().toUpperCase() === 'BTC'));
+  const big = baseFiltered.filter(h=>holdUsd(h)>=SMALL_WALLET);
+  const hiddenCount = baseFiltered.length - big.length;
+  const rowsToShow = HIDE_SMALL_WALLET ? big : baseFiltered;
+  const row = h => `<tr><td><div class="asset">${safeUrl(h.icon)?`<img src="${esc(safeUrl(h.icon))}" alt="" loading="lazy" referrerpolicy="no-referrer">`:''}${esc(h.sym)}</div></td><td>${CH_NAME[h.chainId]||h.chainId}</td><td>${fmtNum(h.amt)}</td><td>${fmtUsd(effPrice(h.usym,h.priceNow))}${wbtcMark(h.usym)}</td><td>${fmtUsd(holdUsd(h))}</td>${multi?`<td>${wNameH(h.w.addr)}</td>`:''}</tr>`;
+  const wl = rowsToShow.filter(h=>h.kind==='w').sort((a,b)=>holdUsd(b)-holdUsd(a));
+  const head = t => `<thead><tr><th scope="col">${t}</th><th scope="col">Rede</th><th scope="col">Qtd</th><th scope="col">Preço</th><th scope="col">USD</th>${multi?'<th scope="col">Carteira</th>':''}</tr></thead>`;
+  return `<div class="card" id="holdCard"><div class="mkt-head"><h2>Carteira</h2><div class="row">${hiddenCount?`<span class="hint">${hiddenCount} ativo(s) abaixo de US$ 0,10</span>`:''}<button type="button" class="ghost ${HIDE_SMALL_WALLET?'':'on'}" id="toggleSmallHold" style="padding:5px 10px;font-size:12px">${HIDE_SMALL_WALLET?'Mostrar':'Ocultar < US$ 0,10'}</button></div></div>
+    <div class="tblwrap"><table>
+      <caption class="sr-only">Ativos na carteira</caption>${head('Em carteira')}<tbody>${wl.length?wl.map(row).join(''):'<tr><td colspan=6 class="hint">Nenhum ativo encontrado na carteira.</td></tr>'}</tbody>
+    </table></div>
+    <div class="hint" style="margin-top:6px">Saldos conferidos via explorador e direto na blockchain em ${Object.keys(RPC).length} redes; preços DefiLlama.</div></div>`;
+}
+
+let TV_ACTIVE = false;
+let tvWidgetInstance = null;
+let tvMounting = false;
+function renderLiqAlert(){
+  const box = $('#liqAlertBox');
+  if(!box) return;
+  const now = btcNow();
+  const liqs = Object.values(LIQ).filter(x => x && x.v > 0).sort((a,b)=>b.v-a.v);
+  if(!liqs.length){
+    box.className = 'liq-alert';
+    box.innerHTML = `<div class="liq-alert-head">
+      <div class="row"><span class="liq-status-pill">● Monitoramento ativo</span><b>Alertas de Liquidação (Aave &amp; Morpho)</b></div>
+      <span class="hint">Nenhuma posição com liquidação em BTC no momento.</span>
+    </div>`;
+    return;
+  }
+  let worstDrop = Infinity;
+  const badges = liqs.map(l => {
+    const dropRatio = now > 0 ? (now - l.v) / now : null;
+    if(dropRatio != null && dropRatio < worstDrop) worstDrop = dropRatio;
+    const lvl = dropRatio == null ? '' : dropRatio <= 0.12 ? 'danger' : dropRatio <= 0.25 ? 'warn' : '';
+    const rawVal = Number(l.v.toFixed(2));
+    const distTxt = dropRatio == null ? '' : dropRatio > 0
+      ? `<span class="${lvl==='danger'?'neg':lvl==='warn'?'':'pos'}">(-${fmtPct(dropRatio,1)} de queda)</span>`
+      : `<span class="neg">(acima do preço atual)</span>`;
+    return `<div class="liq-badge ${lvl}">
+      <i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${l.color}"></i>
+      <span>${esc(l.label)}:</span>
+      <b>${fmtUsd(l.v,2)}</b>
+      ${distTxt}
+      <button type="button" class="copy-liq" data-val="${rawVal}" title="Copiar valor para colar no TradingView">Copiar</button>
+    </div>`;
+  }).join('');
+
+  let bannerLvl = '';
+  let statusTxt = '● Margem segura';
+  let msgTxt = 'Todas as posições em BTC estão com folga até a liquidação.';
+  if(worstDrop <= 0.12){
+    bannerLvl = 'danger';
+    statusTxt = '▲ Alerta crítico';
+    msgTxt = 'Atenção: uma ou mais posições estão próximas do preço de liquidação!';
+  }else if(worstDrop <= 0.25){
+    bannerLvl = 'warn';
+    statusTxt = '◆ Atenção';
+    msgTxt = 'Monitoramento: posição com margem moderada até a liquidação.';
+  }
+
+  box.className = `liq-alert ${bannerLvl}`;
+  box.innerHTML = `<div class="liq-alert-head">
+    <div class="row"><span class="liq-status-pill">${statusTxt}</span><b>Alertas de Liquidação (Aave &amp; Morpho)</b></div>
+    <span class="hint">${msgTxt} Dica: clique em <b>Copiar</b> e use a linha horizontal no TradingView.</span>
+  </div>
+  <div class="liq-badges">${badges}</div>`;
+
+  box.querySelectorAll('.copy-liq').forEach(btn=>{
+    btn.onclick = async()=>{
+      const txt = String(btn.dataset.val);
+      let ok = false;
+      try{ await navigator.clipboard.writeText(txt); ok = true; }
+      catch(e){
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        try{ ok = document.execCommand('copy'); }catch(_e){ ok = false; }
+        ta.remove();
+      }
+      const old = btn.textContent;
+      btn.textContent = ok ? 'Copiado ✓' : txt;
+      btn.classList.toggle('ok', ok);
+      setTimeout(()=>{ btn.textContent = old; btn.classList.remove('ok'); }, 1800);
+    };
+  });
+}
+
+function mountTradingViewWidget(){
+  const container = document.getElementById('tvContainer');
+  if(!container || tvMounting) return;
+  if(container.querySelector('iframe') && lastTvTheme === THEME) return;
+  const targetTheme = THEME;
+  tvMounting = true;
+  try{
+    const cfg = {
+      autosize: true,
+      symbol: 'COINBASE:BTCUSD',
+      interval: '60',
+      timezone: 'America/Sao_Paulo',
+      theme: targetTheme === 'light' ? 'light' : 'dark',
+      style: '1',
+      locale: 'br',
+      allow_symbol_change: true,
+      hide_side_toolbar: false,
+      save_image: false,
+      support_host: 'https://www.tradingview.com'
+    };
+    const src = 'https://www.tradingview-widget.com/embed-widget/advanced-chart/?locale=br#' + encodeURIComponent(JSON.stringify(cfg));
+    container.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.src = src;
+    iframe.title = 'TradingView BTC/USD';
+    iframe.style.cssText = 'width:100%;height:100%;border:0;display:block;';
+    iframe.setAttribute('allowtransparency', 'true');
+    iframe.setAttribute('scrolling', 'no');
+    iframe.setAttribute('allow', 'clipboard-write; fullscreen');
+    iframe.onload = () => {
+      lastTvTheme = targetTheme;
+      tvMounting = false;
+    };
+    iframe.onerror = () => {
+      tvMounting = false;
+    };
+    tvWidgetInstance = iframe;
+    container.appendChild(iframe);
+    lastTvTheme = targetTheme;
+    setTimeout(() => { tvMounting = false; }, 1200);
+  }catch(e){
+    console.warn('tv widget', e);
+    tvMounting = false;
+  }
+}
+
+let lastTvTheme = null;
+function loadBtc(force){
+  const now = btcNow();
+  const nowEl = $('#btcNowTxt');
+  if(nowEl) nowEl.innerHTML = now ? `BTC ao vivo: <b>${fmtUsd(now,2)}</b>${LIVE_SRC?' ('+LIVE_SRC+')':''}` : '';
+  renderLiqAlert();
+  const container = document.getElementById('tvContainer');
+  const hasFrame = !!(container && container.querySelector('iframe'));
+  if(force && lastTvTheme !== THEME){
+    if(container) container.innerHTML = '';
+    tvMounting = false;
+    mountTradingViewWidget();
+    return;
+  }
+  if(!hasFrame && !tvMounting){
+    mountTradingViewWidget();
+  }
+}
+
+function setupSim(c,i){
+  const el = document.getElementById('sim'+i); if(!el) return;
+  const {m,ms,mb,view} = c;
+  const items = [
+    ...ms.filter(s=>rowUsd(s)>=SMALL_AAVE).map(s=>({kind:'s', coll:s.isCollateral, cur:s.currency, sym:s.currency.symbol, q0:rowAmt(s), price:rowP(s), lt:ltOf(m,s.currency.address), ltv:ltvOf(m,s.currency.address), apy:+(s.apy?.value||0)})),
+    ...mb.filter(b=>rowUsd(b)>=SMALL_AAVE).map(b=>({kind:'d', cur:b.currency, sym:b.currency.symbol, q0:rowAmt(b), price:rowP(b), apy:+(b.apy?.value||0)}))
+  ];
+  const ck = `${c.w.addr}|${m.chain.chainId}|${m.address}`.toLowerCase(), canSwap = m.protocol!=='morpho';
+  const keyOf = (kind,sym) => `${ck}|${kind}|${sym}`.toLowerCase();
+  const logo = r => `https://token-logos.family.co/asset?id=${m.chain.chainId}:${r.underlyingToken.address}&token=${encodeURIComponent(r.underlyingToken.symbol)}`;
+  const resItem = (kind, r) => {
+    const sym=r.underlyingToken.symbol, a=r.underlyingToken.address;
+    const it = {kind, added:true, cur:{symbol:sym,address:a,imageUrl:logo(r)}, sym, q0:0, price:effPrice(sym,r.usdExchangeRate), apy:+(kind==='s'?r.supplyInfo?.apy?.value:r.borrowInfo?.apy?.value)||0};
+    if(kind==='s'){ it.lt=ltOf(m,a); it.ltv=ltvOf(m,a); it.coll=it.lt>0; }
+    return it;
+  };
+  for(const a of (canSwap ? SIM_ADD[ck]||[] : [])){
+    if(items.some(x=>x.kind===a.kind && sameAddr(x.cur.address,a.addr))) continue;
+    const r = reserveOf(m,a.addr); if(r) items.push(resItem(a.kind,r));
+  }
+  items.sort((a,b)=>(a.kind==='s'?0:1)-(b.kind==='s'?0:1));
+  items.forEach(x=>{ x.key=keyOf(x.kind,x.sym); x.q = SIM_Q[x.key] ?? x.q0; x.g=priceGroup(x.sym,x.price); });
+  const coll = () => items.filter(x=>x.kind==='s'&&x.coll), debts = () => items.filter(x=>x.kind==='d');
+  const raw0 = coll().reduce((a,x)=>a+x.q0*x.price*x.lt,0)/Math.max(1e-9, debts().reduce((a,x)=>a+x.q0*x.price,0));
+  const k = (view.hf && raw0>0 && debts().length) ? view.hf/raw0 : 1;
+  const groups = [...new Set(items.map(x=>x.g).filter(Boolean))];
+  const ref = g => (g==='ETH' ? items.find(x=>/^W?ETH$/i.test(x.sym)) : g==='BTC' ? items.find(x=>isWbtc(x.sym)) : null) || items.find(x=>x.g===g);
+  const f = Object.fromEntries(groups.map(g=>[g,1]));
+  const fac = g => g ? f[g] : 1;
+  const usd = x => x.q*x.price*fac(x.g);
+  const calc = () => {
+    const C = k*coll().reduce((a,x)=>a+usd(x)*x.lt,0), D = debts().reduce((a,x)=>a+usd(x),0);
+    const S = items.filter(x=>x.kind==='s').reduce((a,x)=>a+usd(x),0);
+    const earn = items.filter(x=>x.kind==='s').reduce((a,x)=>a+usd(x)*x.apy,0) - debts().reduce((a,x)=>a+usd(x)*x.apy,0);
+    const cap = coll().reduce((a,x)=>a+usd(x)*x.ltv,0);
+    return {hf: D>0 ? C/D : Infinity, net:S-D, apy: S-D>0 ? earn/(S-D) : null, avail: Math.max(0,cap-D), debt:D, earn};
+  };
+  const liqFor = g => {
+    const cl=coll(), db=debts();
+    const A = k*cl.filter(x=>x.g!==g).reduce((a,x)=>a+usd(x)*x.lt,0), B = k*cl.filter(x=>x.g===g).reduce((a,x)=>a+x.q*x.price*x.lt,0);
+    const Cc = db.filter(x=>x.g!==g).reduce((a,x)=>a+usd(x),0), Dd = db.filter(x=>x.g===g).reduce((a,x)=>a+x.q*x.price,0);
+    if(Math.abs(B-Dd)<1e-9) return null; const ff = (Cc-A)/(B-Dd); return ff>0 ? ff : null;
+  };
+  const F = SW_FORM[ck] || (SW_FORM[ck] = {});
+  const SWAP_ICO = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 3 8l4 4"/><path d="M3 8h14"/><path d="m17 20 4-4-4-4"/><path d="M21 16H7"/></svg>';
+  const qRow = (x,j) => `<tr><td>${assetCell(x.cur)}</td><td><span class="pill">${x.kind==='s'?(x.coll?'colateral':'depósito'):'dívida'}</span>${x.added?' <span class="pill" style="border-color:var(--warn);color:var(--warn)">swap</span>':''}</td>
+     <td class="qcell" data-l="Quantidade"><button class="undo" data-j="${j}" title="Voltar ao valor original" aria-label="Voltar ao valor original"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><input class="qty" type="number" step="any" min="0" data-j="${j}" value="${+x.q.toFixed(8)}"></td>
+     <td id="pr${i}_${j}" data-l="Preço"></td><td id="u${i}_${j}" data-l="USD"></td><td data-l="APY">${fmtPct(x.apy)}</td>
+     <td class="actcell">${canSwap?`<button class="swbtn ${F.open===x.key&&F.mode==='swap'?'on':''}" data-j="${j}" data-mode="swap" title="Simular swap de ${esc(x.sym)}" aria-label="Simular swap de ${esc(x.sym)}" ${x.q>0?'':'disabled'}>${SWAP_ICO}</button>`:''}${x.kind==='d'?`<button class="swbtn rpbtn ${F.open===x.key&&F.mode==='ext'?'on':''}" data-j="${j}" data-mode="ext" title="Repagar ${esc(x.sym)}" ${x.q>0?'':'disabled'}>Repagar</button>`:''}${canSwap&&x.kind==='s'&&debts().some(d=>d.q>0)?`<button class="swbtn rpbtn ${F.open===x.key&&F.mode==='repay'?'on':''}" data-j="${j}" data-mode="repay" title="Repagar dívida usando ${esc(x.sym)}" ${x.q>0?'':'disabled'}>Repagar</button>`:''}</td></tr>
+     ${F.open===x.key && x.q>0 && F.mode==='ext' ? `<tr class="swrow"><td colspan="7"><div class="swap" data-j="${j}"><b>Repagar ${esc(x.sym)} com dinheiro de fora</b>
+      <input class="sw-amt" type="number" step="any" min="0" placeholder="qtd de ${esc(x.sym)}"><button class="ghost sw-max">tudo</button>
+      <span class="sw-prev hint"></span><button class="sw-go">Aplicar</button><button class="ghost sw-x">Cancelar</button></div></td></tr>` : ''}
+     ${canSwap && F.open===x.key && x.q>0 && F.mode!=='ext' ? `<tr class="swrow"><td colspan="7"><div class="swap" data-j="${j}"><b>${F.mode==='repay'?`Repagar dívida com ${esc(x.sym)}`:`Swap de ${esc(x.sym)}`}</b>
+      <input class="sw-amt" type="number" step="any" min="0" placeholder="qtd de ${esc(x.sym)}"><button class="ghost sw-max">máx</button>
+      <span class="hint">${F.mode==='repay'?'repaga':'para'}</span><select class="sw-to"></select>
+      <span class="sw-prev hint"></span><button class="sw-go">Aplicar</button><button class="ghost sw-x">Cancelar</button></div></td></tr>` : ''}`;
+  el.innerHTML = `<div class="row"><b>Posições</b><span class="hint">edite a quantidade para simular</span></div>
+    <div class="tblwrap"><table class="simtbl"><caption class="sr-only">Posições e simulação</caption><thead><tr><th scope="col">Ativo</th><th scope="col"><span class="sr-only">Tipo</span></th><th scope="col">Quantidade</th><th scope="col">Preço</th><th scope="col">USD</th><th scope="col">APY</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead><tbody>${items.map(qRow).join('')}</tbody></table></div>`;
+  const qs = items.map(x=>x.q); items.forEach(x=>x.q=x.q0); const r0 = calc(); items.forEach((x,k)=>x.q=qs[k]);
+  const upd = () => {
+    const r = calc();
+    SIM_DELTA[i] = {dS:(r.net+r.debt)-(r0.net+r0.debt), dD:r.debt-r0.debt, dE:r.earn-r0.earn};
+    updateTiles();
+    items.forEach((x,j)=>{
+      const uBtn = el.querySelector(`.undo[data-j="${j}"]`);
+      if(uBtn) uBtn.classList.toggle('on', x.added || Math.abs(x.q-x.q0)>1e-12);
+      const uCell = document.getElementById(`u${i}_${j}`);
+      if(uCell) uCell.textContent = fmtUsd(usd(x));
+      const pCell = document.getElementById(`pr${i}_${j}`);
+      if(pCell) pCell.innerHTML = fmtUsd(x.price*fac(x.g))+wbtcMark(x.sym);
+    });
+    const liqCell = () => {
+      const rf = ref('BTC');
+      if(!rf || !debts().length){ delete LIQ[i]; renderLiqAlert(); return ''; }
+      const lf = liqFor('BTC');
+      if(lf==null){ delete LIQ[i]; renderLiqAlert(); return `<div><div class="l">Liquidação BTC</div><div class="v">—</div></div>`; }
+      const pLabel = m.protocol==='morpho' ? 'Morpho' : m.name.replace(/^AaveV3/,'Aave v3 ');
+      LIQ[i] = {label:`${m.chain.name} · ${pLabel}${onWallets().length>1?' · '+wName(c.w.addr):''}`, v:rf.price*lf, color:SERIES[(i+1)%SERIES.length]};
+      renderLiqAlert();
+      return `<div><div class="l">Liquidação BTC</div><div class="v">${fmtUsd(rf.price*lf,0)}</div><div class="l">${sgnPct(lf-1)} vs. ${fmtUsd(rf.price,0)}</div></div>`;
+    };
+    const us=m.userState||{ltv:{value:'0'},currentLiquidationThreshold:{value:'0'}};
+    const chg = Math.abs(r.net-r0.net)+Math.abs(r.debt-r0.debt)+Math.abs((r.hf||0)-(r0.hf||0))>0.005;
+    const tag = chg ? ' <span class="pill" style="border-color:var(--warn);color:var(--warn)">simulado</span>' : '';
+    const C = coll().reduce((a,x)=>a+usd(x),0);
+    const msEl = document.getElementById('ms'+i);
+    if(msEl) msEl.innerHTML = `
+      <div><div class="l">Health Factor${tag}</div><div class="v ${hfClass(r.hf)}">${hfTxt(chg?r.hf:view.hf)}</div></div>
+      ${liqCell()}
+      <div><div class="l">Colateral</div><div class="v">${fmtUsd(chg?C:view.coll,0)}</div></div>
+      <div><div class="l">Dívida</div><div class="v">${fmtUsd(chg?r.debt:view.debt,0)}</div></div>
+      <div><div class="l">Patrimônio líquido</div><div class="v">${fmtUsd(r.net,0)}</div></div>
+      <div><div class="l">Disponível p/ emprestar</div><div class="v">${fmtUsd(chg?r.avail:view.avail,0)}</div></div>
+      <div><div class="l">LTV / Liq. threshold</div><div class="v">${fmtPct(+(us.ltv?.value||0),0)} / ${fmtPct(+(us.currentLiquidationThreshold?.value||0),0)}</div></div>
+      <div><div class="l">APY líquido</div><div class="v ${r.apy!=null&&r.apy<0?'neg':'pos'}">${r.apy==null?'—':fmtPct(r.apy)}</div></div>`;
+  };
+  el.querySelectorAll('input.qty').forEach(inp=>inp.addEventListener('input',()=>{
+    const v=parseFloat(inp.value.replace(',','.'));
+    const x=items[+inp.dataset.j];
+    x.q = isFinite(v)&&v>=0 ? v : 0;
+    if(Math.abs(x.q-x.q0)>1e-12) SIM_Q[x.key]=x.q; else delete SIM_Q[x.key];
+    upd();
+  }));
+  el.querySelectorAll('.undo').forEach(btn=>btn.onclick=()=>{
+    const j=+btn.dataset.j, x=items[j];
+    x.q=x.q0; delete SIM_Q[x.key];
+    if(x.added){ SIM_ADD[ck] = (SIM_ADD[ck]||[]).filter(a=>!(a.kind===x.kind && sameAddr(a.addr,x.cur.address))); setupSim(c,i); return; }
+    const inp = el.querySelector(`input.qty[data-j="${j}"]`);
+    if(inp) inp.value = +x.q0.toFixed(8);
+    upd();
+  });
+  upd();
+}
+
+function renderAll(){
+  syncVersionBadge();
+  const cards = STATE ? collectCards() : [];
+  SIM_DELTA = {}; LIQ = {};
+  if(STATE){
+    const allS=[], allB=[];
+    for(const c of cards){ allS.push(...supItems(c.ms)); allB.push(...borItems(c.mb)); }
+    const hold = onWallets().flatMap(w=>w.hold);
+    TILE_BASE = {
+      S:allS.reduce((a,x)=>a+x.usd,0),
+      D:allB.reduce((a,x)=>a+x.usd,0),
+      E:netApy(allS,allB).earn,
+      wal:hold.filter(h=>h.kind==='w').reduce((a,h)=>a+holdUsd(h),0)
+    };
+  }else{
+    TILE_BASE = null;
+  }
+  const tiles = STATE ? `<div class="tiles" id="tiles"></div>` : '';
+  const body = STATE
+    ? (cards.length ? cards.map((c,i)=>marketCard(c,i)).join('') : `<div class="card empty">Nenhuma posição ativa na Aave v3 ou Morpho para este(s) endereço(s).</div>`)
+    : '';
+  const holdHtml = STATE ? holdingsCard() : '';
+  const scanHtml = STATE ? scanCard() : '';
+  $('#out').innerHTML = tiles + holdHtml + body + scanHtml;
+  const dScan = $('#scanCard');
+  if(dScan){ dScan.open = !!window.SCAN_OPEN; dScan.ontoggle = ()=>{ window.SCAN_OPEN = dScan.open; }; }
+  const tglSmall = $('#toggleSmallHold');
+  if(tglSmall) tglSmall.onclick = ()=>{ HIDE_SMALL_WALLET = !HIDE_SMALL_WALLET; renderAll(); };
+  cards.forEach((c,i)=>setupSim(c,i));
+  updateTiles();
+  loadBtc(false);
+  renderWallets();
+}
+
+function saveWallets(){
+  try{ localStorage.setItem('defi_wallets', JSON.stringify(WALLETS)); }catch(e){}
+}
+function parseAddrs(s){
+  return [...new Set(String(s||'').split(/[\s,;]+/).map(x=>x.trim()).filter(x=>/^0x[0-9a-fA-F]{40}$/.test(x)).map(x=>x.toLowerCase()))];
+}
+let WALLETS = [];
+const isOn = a => WALLETS.some(w=>w.addr===a && w.on);
+const wName = a => (WALLETS.find(w=>w.addr===a)||{}).name || short(a);
+const wNameH = a => esc(wName(a));
+const onWallets = () => STATE ? STATE.wallets.filter(w=>isOn(w.addr)) : [];
+const walletsHash = () => WALLETS.length ? '#w=' + WALLETS.map(w=>w.addr+':'+encodeURIComponent(w.name||'')+(w.on?'':':0')).join(',') : '';
+function walletsFromHash(h){
+  const m = /[#&]w=([^&]*)/.exec(h||''); if(!m) return null;
+  const out = [];
+  for(const part of m[1].split(',')){
+    const [a,n,o] = part.split(':');
+    const addr = (a||'').trim().toLowerCase();
+    if(!/^0x[0-9a-f]{40}$/.test(addr) || out.some(w=>w.addr===addr)) continue;
+    let name=''; try{ name=decodeURIComponent(n||''); }catch(e){}
+    out.push({addr, name: cleanName(name) || `Carteira ${out.length+1}`, on: o!=='0'});
+  }
+  return out.length ? out : null;
+}
+function shareLink(){ return location.origin + location.pathname + walletsHash(); }
+function walletValue(w){
+  let v = 0;
+  for(const r of w.supplies) v += rowUsd(r);
+  for(const r of w.borrows) v -= rowUsd(r);
+  for(const h of w.hold) v += holdUsd(h);
+  return v;
+}
+function renderWallets(){
+  const box = $('#wlist'); if(!box) return;
+  const loaded = a => STATE && STATE.wallets.find(w=>w.addr===a);
+  box.innerHTML = WALLETS.map(w=>{ const L = loaded(w.addr);
+    return `<div class="wchip ${w.on?'':'off'}" title="${esc(w.addr)}">
+      <input type="checkbox" data-a="${esc(w.addr)}" ${w.on?'checked':''} title="ligar/desligar na simulação" aria-label="Incluir ${esc(w.name)} na simulação">
+      <span class="wn" data-a="${esc(w.addr)}">${esc(w.name)}</span>
+      <span class="hint">${esc(short(w.addr))}</span>
+      <span class="wv">${L ? fmtUsd(walletValue(L),0) : 'não carregada'}</span>
+      <button type="button" class="wdel" data-a="${esc(w.addr)}" title="remover carteira" aria-label="Remover ${esc(w.name)}">×</button></div>`; }).join('')
+    + (WALLETS.length ? `<button class="ghost linkbtn" id="linkCopy" title="copia o link desta página já com todas as carteiras"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copiar link com as carteiras</span></button><span class="hint linkwarn">cuidado ao compartilhar</span>` : '');
+  box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{ const w=WALLETS.find(x=>x.addr===cb.dataset.a); if(w){ w.on=cb.checked; saveWallets(); renderAll(); } });
+  const lb = $('#linkCopy'); if(lb) lb.onclick = async()=>{ const url = shareLink(); let ok=true;
+    try{ await navigator.clipboard.writeText(url); }catch(e){ const t=document.createElement('textarea'); t.value=url; document.body.appendChild(t); t.select(); ok=document.execCommand('copy'); t.remove(); }
+    const sp = lb.querySelector('span'); sp.textContent = ok ? 'Link copiado ✓' : 'Copie da barra de endereço'; lb.classList.add('ok'); setTimeout(()=>{ sp.textContent='Copiar link com as carteiras'; lb.classList.remove('ok'); },2000); };
+  box.querySelectorAll('.wdel').forEach(b=>b.onclick=()=>{ WALLETS = WALLETS.filter(x=>x.addr!==b.dataset.a); saveWallets(); renderAll(); });
+}
+
+function addWallet(){
+  const addrs = parseAddrs($('#addr').value); if(!addrs.length) return 0;
+  let added = 0;
+  for(const a of addrs){
+    if(WALLETS.some(w=>w.addr===a)) continue;
+    WALLETS.push({addr:a, name: `Carteira ${WALLETS.length+1}`, on:true}); added++;
+  }
+  $('#addr').value=''; saveWallets(); renderWallets();
+  if(added && STATE) setStatus('Carteira adicionada — clique em Carregar para ler os dados dela.');
+  return added;
+}
+
+function go(){
+  if($('#addr').value.trim()){ const ok = addWallet(); if(!ok && !parseAddrs($('#addr').value).length && !WALLETS.length){ setStatus('Endereço inválido — use o formato 0x seguido de 40 caracteres.'); return; } }
+  const addrs = WALLETS.map(w=>w.addr);
+  if(!addrs.length){ setStatus('Adicione pelo menos uma carteira.'); return; }
+  SIM_Q = {}; SIM_ADD = {}; SW_FORM = {}; SWAPS = {}; MANUAL_WBTC = null; $('#wbtc').classList.remove('set'); $('#wbtcHint').textContent='Atualizando preço…';
+  BS_CACHE.clear();
+  liveTick(true);
+  loadAll(addrs);
+}
+
+async function manualRefresh(){
+  const btn = $('#refreshBtn');
+  if(btn) btn.disabled = true;
+  BS_CACHE.clear();
+  try{
+    await Promise.all([fetchBrl(), liveTick(true)]);
+    if(WALLETS.length){
+      await loadAll(WALLETS.map(w=>w.addr));
+    }else{
+      loadBtc(true);
+      $('#lastUpdate').textContent = 'Atualizado ' + new Date().toLocaleString('pt-BR');
+    }
+  }finally{
+    if(btn) btn.disabled = false;
+  }
+}
+
+const fmtPrice = v => v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+async function fetchLiveWbtc(){
+  try{ const j = await (await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot',{cache:'no-store'})).json(); const v=+j.data.amount; if(v>0) return {v, src:'Coinbase'}; }catch(e){}
+  try{ const j = await (await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT',{cache:'no-store'})).json(); const v=+j.price; if(v>0) return {v, src:'Binance'}; }catch(e){}
+  return null;
+}
+function wbtcHint(){
+  $('#wbtcClear').classList.toggle('on', !!MANUAL_WBTC);
+  const mk = marketWbtc(), t = LIVE_TS ? new Date(LIVE_TS).toLocaleTimeString('pt-BR') : '';
+  const orc = mk ? ` · oráculo Aave: ${fmtUsd(mk,0)}` : '';
+  $('#wbtcHint').innerHTML = MANUAL_WBTC
+    ? `Preço manual em todas as redes. Ao vivo: ${LIVE_WBTC?fmtUsd(LIVE_WBTC,2):'—'}${orc}.`
+    : LIVE_WBTC ? `<span style="color:var(--good)">●</span> ${LIVE_SRC} · ${t}${orc}. Edite para simular.`
+    : `Preço do oráculo da Aave${mk?` (${fmtUsd(mk,2)})`:''}.`;
+}
+let liveBusy = false;
+async function liveTick(force){
+  if(liveBusy) return; liveBusy = true;
+  try{
+    const r = await fetchLiveWbtc(); if(!r) return;
+    const changed = Math.abs(r.v-(LIVE_WBTC||0))>0.005;
+    LIVE_WBTC = r.v; LIVE_SRC = r.src; LIVE_TS = Date.now();
+    if(!MANUAL_WBTC && document.activeElement!==$('#wbtc')) $('#wbtc').value = fmtPrice(LIVE_WBTC);
+    wbtcHint();
+    const typing = document.activeElement && document.activeElement.matches && document.activeElement.matches('#out input, #out select');
+    if(STATE && !MANUAL_WBTC && (changed||force) && !typing){ renderAll(); }
+    else if(!STATE){ drawBtc(); }
+  } finally { liveBusy = false; }
+}
+const drawBtc = () => loadBtc(false);
+
+function refreshWbtcField(){
+  MANUAL_WBTC = null; $('#wbtc').classList.remove('set');
+  const v = LIVE_WBTC || marketWbtc(); $('#wbtc').value = v ? fmtPrice(v) : '';
+  wbtcHint();
+}
+function setWbtc(v){
+  const ref = LIVE_WBTC || marketWbtc();
+  if(v && ref && Math.abs(v-ref)<0.005) v = null;
+  MANUAL_WBTC = v;
+  $('#wbtc').classList.toggle('set', !!v);
+  if(!v && ref) $('#wbtc').value = fmtPrice(ref);
+  wbtcHint();
+  if(STATE) renderAll();
+}
+
+document.addEventListener('error', e => { const t = e.target; if(t && t.tagName === 'IMG') t.style.visibility = 'hidden'; }, true);
+document.addEventListener('click', e => {
+  const box = document.getElementById('tvBox'); if(!box) return;
+  if(e.target.closest('#tvLock')){ TV_ACTIVE = true; box.classList.remove('locked'); }
+  else if(e.target.closest('#tvUnlock')){ TV_ACTIVE = false; box.classList.add('locked'); }
+});
+$('#themeBtn').onclick = () => applyTheme(THEME === 'dark' ? 'light' : 'dark');
+$('#refreshBtn').onclick = manualRefresh;
+$('#go').onclick = go;
+$('#addr').addEventListener('keydown',e=>{ if(e.key==='Enter') addWallet(); });
+$('#addW').onclick = addWallet;
+$('#wbtc').addEventListener('change',()=>setWbtc(parseNum($('#wbtc').value)));
+$('#wbtc').addEventListener('keydown',e=>{ if(e.key==='Enter') setWbtc(parseNum($('#wbtc').value)); });
+$('#wbtcClear').onclick = ()=>setWbtc(null);
+$('#wbtc').addEventListener('blur',()=>{ if(!MANUAL_WBTC && LIVE_WBTC) $('#wbtc').value = fmtPrice(LIVE_WBTC); });
+
+(function init(){
+  let savedTheme = 'dark';
+  try{
+    savedTheme = localStorage.getItem('monitor_defi_theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  }catch(e){}
+  applyTheme(savedTheme);
+  syncVersionBadge();
+  fxLine(); fetchBrl(); liveTick(true);
+  try{ WALLETS = JSON.parse(localStorage.getItem('defi_wallets')||'[]'); }catch(e){ WALLETS=[]; }
+  WALLETS = (Array.isArray(WALLETS)?WALLETS:[]).filter(w=>w&&/^0x[0-9a-f]{40}$/i.test(String(w.addr||''))).map((w,i)=>({addr:String(w.addr).toLowerCase(), name:cleanName(w.name)||`Carteira ${i+1}`, on:w.on!==false}));
+  const fromLink = walletsFromHash(location.hash); if(fromLink) WALLETS = fromLink;
+  const clearHash = () => { if(/[#&]w=/.test(location.hash)) try{ history.replaceState(null,'', location.pathname + location.search); }catch(e){} };
+  clearHash();
+  window.addEventListener('hashchange', ()=>{ const w = walletsFromHash(location.hash); if(w && JSON.stringify(w)!==JSON.stringify(WALLETS)){ WALLETS = w; saveWallets(); renderWallets(); go(); } clearHash(); });
+  const q = new URLSearchParams(location.search).get('address')||'';
+  for(const a of parseAddrs(q)) if(!WALLETS.some(w=>w.addr===a)) WALLETS.push({addr:a, name:`Carteira ${WALLETS.length+1}`, on:true});
+  saveWallets(); renderWallets();
+  if(q){ const u=new URL(location.href); u.searchParams.delete('address'); history.replaceState(null,'',u); }
+  renderAll();
+  if(WALLETS.length) go();
+})();
+</script>
+</body>
+</html>
