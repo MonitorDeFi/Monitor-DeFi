@@ -232,7 +232,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.3.3</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.3.4</span>
       <span class="hint" id="lastUpdate"></span>
       <button class="ghost theme-btn" id="refreshBtn" title="Atualizar somente posições e saldo em carteira">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
@@ -298,6 +298,10 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${a
    HISTÓRICO DE VERSÕES  (a cada mudança: atualizar APP_VERSION aqui E o selo #appVersion no HTML)
    Regra: correção = +0.0.1 · funcionalidade/mudança de UX = +0.1.0 · mudança incompatível = +1.0.0
 
+   v1.3.4  Corrige os Alertas de Liquidação (Aave, Morpho & Venus): passa a monitorar todas as
+           posições com dívida (BTC e variantes como BTC.b, outros colaterais voláteis como ETH/BNB
+           e colateral misto via queda correlacionada + Health Factor), melhora a cópia do valor
+           e remove marcações residuais no início/fim do arquivo.
    v1.3.3  Corrige saldo incorreto na Polygon (e demais redes EVM): ignora o contrato espelho
            nativo MRC-20 (0x0000...1010) para evitar duplicação do POL/MATIC e impede que tokens
            desconhecidos/spam herdem preço por símbolo (ex.: USDC/USDT/POL/WBTC falsos).
@@ -336,7 +340,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${a
            foco visível, h1/main, aria-live, aria-labels, caption/scope nas tabelas.
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v1.3.3';
+const APP_VERSION = 'v1.3.4';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -379,7 +383,7 @@ function valBlock(usd, btc){
 }
 
 let MANUAL_WBTC = null;
-const isWbtc = sym => /^(W?BTC|CBBTC|TBTC|LBTC|BTCB|XBTC|SOLVBTC|UNIBTC|PUMPBTC|FBTC|EBTC)(\.E)?$/i.test(String(sym||'').trim());
+const isWbtc = sym => /^(W?BTC|CBBTC|TBTC|LBTC|BTCB|XBTC|SBTC|KBTC|VBTC|SOLVBTC|UNIBTC|PUMPBTC|FBTC|EBTC)(\.[EB])?$/i.test(String(sym||'').trim());
 const PURE_STABLE = /^(USDC|USDT|DAI|GHO|USDS|USDBC|PYUSD|LUSD|FRAX|EURC|FDUSD|TUSD)(\.E)?$/i;
 const isPureStable = sym => {
   const u = String(sym||'').replace(/^USDT0$/i,'USDT').trim();
@@ -1502,42 +1506,57 @@ let tvMounting = false;
 function renderLiqAlert(){
   const box = $('#liqAlertBox');
   if(!box) return;
-  const now = btcNow();
-  const liqs = Object.values(LIQ).filter(x => x && x.v > 0).sort((a,b)=>b.v-a.v);
+  const liqs = Object.values(LIQ).filter(Boolean).sort((a,b)=>{
+    const da = a.dropRatio != null ? a.dropRatio : (a.hf != null && isFinite(a.hf) ? (a.hf - 1) : 999);
+    const db = b.dropRatio != null ? b.dropRatio : (b.hf != null && isFinite(b.hf) ? (b.hf - 1) : 999);
+    return da - db;
+  });
   if(!liqs.length){
     box.className = 'liq-alert';
     box.innerHTML = `<div class="liq-alert-head">
       <div class="row"><span class="liq-status-pill">● Monitoramento ativo</span><b>Alertas de Liquidação (Aave, Morpho &amp; Venus)</b></div>
-      <span class="hint">Nenhuma posição com liquidação em BTC no momento.</span>
+      <span class="hint">Nenhuma posição com dívida ativa no momento.</span>
     </div>`;
     return;
   }
-  let worstDrop = Infinity;
+  let hasDanger = false, hasWarn = false;
   const badges = liqs.map(l => {
-    const dropRatio = now > 0 ? (now - l.v) / now : null;
-    if(dropRatio != null && dropRatio < worstDrop) worstDrop = dropRatio;
-    const lvl = dropRatio == null ? '' : dropRatio <= 0.12 ? 'danger' : dropRatio <= 0.25 ? 'warn' : '';
-    const rawVal = Number(l.v.toFixed(2));
+    const dropRatio = l.dropRatio != null ? l.dropRatio : (l.curPrice > 0 && l.v > 0 ? (l.curPrice - l.v) / l.curPrice : null);
+    const hfBad = l.hf != null && isFinite(l.hf) && l.hf < 1.15;
+    const hfWarn = l.hf != null && isFinite(l.hf) && l.hf < 1.5;
+    const lvl = (dropRatio != null && dropRatio <= 0.12) || hfBad ? 'danger'
+      : (dropRatio != null && dropRatio <= 0.25) || hfWarn ? 'warn' : '';
+    if(lvl === 'danger') hasDanger = true;
+    else if(lvl === 'warn') hasWarn = true;
+    const rawVal = l.v > 0 ? Number(l.v.toFixed(2)) : null;
     const distTxt = dropRatio == null ? '' : dropRatio > 0
-      ? `<span class="${lvl==='danger'?'neg':lvl==='warn'?'':'pos'}">(-${fmtPct(dropRatio,1)} de queda)</span>`
+      ? `<span class="${lvl==='danger'?'neg':lvl==='warn'?'':'pos'}">(-${fmtPct(dropRatio,1)}${l.note?' '+esc(l.note):' de queda'})</span>`
       : `<span class="neg">(acima do preço atual)</span>`;
+    const hfPart = l.hf != null && isFinite(l.hf) ? `<span class="hint">HF <b class="${hfClass(l.hf)}">${hfTxt(l.hf)}</b></span>` : '';
+    const pricePart = l.v > 0
+      ? `<b>${esc(l.asset||'BTC')} ${fmtUsd(l.v,2)}</b>`
+      : `<b>${l.note ? esc(l.note) : 'Sem liquidação em preço único'}</b>`;
+    const copyBtn = rawVal != null
+      ? `<button type="button" class="copy-liq" data-val="${rawVal}" title="Copiar valor para colar no TradingView">Copiar</button>`
+      : '';
     return `<div class="liq-badge ${lvl}">
       <i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${l.color}"></i>
       <span>${esc(l.label)}:</span>
-      <b>${fmtUsd(l.v,2)}</b>
+      ${pricePart}
       ${distTxt}
-      <button type="button" class="copy-liq" data-val="${rawVal}" title="Copiar valor para colar no TradingView">Copiar</button>
+      ${hfPart}
+      ${copyBtn}
     </div>`;
   }).join('');
 
   let bannerLvl = '';
   let statusTxt = '● Margem segura';
-  let msgTxt = 'Todas as posições em BTC estão com folga até a liquidação.';
-  if(worstDrop <= 0.12){
+  let msgTxt = 'Todas as posições com dívida estão com folga até a liquidação.';
+  if(hasDanger){
     bannerLvl = 'danger';
     statusTxt = '▲ Alerta crítico';
     msgTxt = 'Atenção: uma ou mais posições estão próximas do preço de liquidação!';
-  }else if(worstDrop <= 0.25){
+  }else if(hasWarn){
     bannerLvl = 'warn';
     statusTxt = '◆ Atenção';
     msgTxt = 'Monitoramento: posição com margem moderada até a liquidação.';
@@ -1554,14 +1573,18 @@ function renderLiqAlert(){
     btn.onclick = async()=>{
       const txt = String(btn.dataset.val);
       let ok = false;
-      try{ await navigator.clipboard.writeText(txt); ok = true; }
-      catch(e){
+      try{
         const ta = document.createElement('textarea');
         ta.value = txt;
+        ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
         document.body.appendChild(ta);
+        ta.focus();
         ta.select();
-        try{ ok = document.execCommand('copy'); }catch(_e){ ok = false; }
+        ok = document.execCommand('copy');
         ta.remove();
+      }catch(_e){ ok = false; }
+      if(!ok && navigator.clipboard && navigator.clipboard.writeText){
+        try{ await navigator.clipboard.writeText(txt); ok = true; }catch(_e){ ok = false; }
       }
       const old = btn.textContent;
       btn.textContent = ok ? 'Copiado ✓' : txt;
@@ -1708,14 +1731,57 @@ function setupSim(c,i){
       if(pCell) pCell.innerHTML = fmtUsd(x.price*fac(x.g))+wbtcMark(x.sym);
     });
     const liqCell = () => {
-      const rf = ref('BTC');
-      if(!rf || !debts().length){ delete LIQ[i]; renderLiqAlert(); return ''; }
-      const lf = liqFor('BTC');
-      if(lf==null){ delete LIQ[i]; renderLiqAlert(); return `<div><div class="l">Liquidação BTC</div><div class="v">—</div></div>`; }
+      const dbList = debts().filter(d => d.q > 0 && d.price > 0);
+      if(!dbList.length){ delete LIQ[i]; renderLiqAlert(); return ''; }
       const pLabel = m.protocol==='morpho' ? 'Morpho' : m.protocol==='venus' ? m.name : m.name.replace(/^AaveV3/,'Aave v3 ');
-      LIQ[i] = {label:`${m.chain.name} · ${pLabel}${onWallets().length>1?' · '+wName(c.w.addr):''}`, v:rf.price*lf, color:SERIES[(i+1)%SERIES.length]};
+      const fullLabel = `${m.chain.name} · ${pLabel}${onWallets().length>1?' · '+wName(c.w.addr):''}`;
+      const color = SERIES[(i+1)%SERIES.length];
+      const curHf = chg ? r.hf : (view.hf != null ? view.hf : r.hf);
+
+      // 1) Prioriza BTC; se não houver liquidação direta em BTC, usa o maior colateral volátil (ETH, BNB, AVAX, etc.)
+      const volGroups = [...new Set(coll().filter(x => x.q > 0 && x.g).map(x => x.g))];
+      volGroups.sort((ga, gb) => {
+        if(ga === 'BTC') return -1;
+        if(gb === 'BTC') return 1;
+        const wa = coll().filter(x => x.g === ga).reduce((a,x) => a + usd(x)*x.lt, 0);
+        const wb = coll().filter(x => x.g === gb).reduce((a,x) => a + usd(x)*x.lt, 0);
+        return wb - wa;
+      });
+      for(const g of volGroups){
+        const rf = ref(g);
+        const lf = liqFor(g);
+        if(rf && lf != null && rf.price > 0){
+          const liqPx = rf.price * lf;
+          const dropRatio = 1 - lf;
+          LIQ[i] = {label:fullLabel, asset:g, v:liqPx, curPrice:rf.price, dropRatio, hf:curHf, color, note:''};
+          renderLiqAlert();
+          return `<div><div class="l">Liquidação ${esc(g)}</div><div class="v">${fmtUsd(liqPx, liqPx < 10 ? 2 : 0)}</div><div class="l">${sgnPct(lf-1)} vs. ${fmtUsd(rf.price, rf.price < 10 ? 2 : 0)}</div></div>`;
+        }
+      }
+
+      // 2) Fallback para colateral misto: queda correlacionada de todos os ativos voláteis
+      const clList = coll();
+      const Cv = k * clList.filter(x => x.g != null).reduce((a,x) => a + usd(x)*x.lt, 0);
+      const Cs = k * clList.filter(x => x.g == null).reduce((a,x) => a + usd(x)*x.lt, 0);
+      const Dv = dbList.filter(x => x.g != null).reduce((a,x) => a + usd(x), 0);
+      const Ds = dbList.filter(x => x.g == null).reduce((a,x) => a + usd(x), 0);
+      const corrFf = Math.abs(Cv - Dv) > 1e-9 ? (Ds - Cs) / (Cv - Dv) : null;
+      if(corrFf != null && corrFf > 0){
+        const dropRatio = 1 - corrFf;
+        const mainG = volGroups[0] || null;
+        const rf = mainG ? ref(mainG) : null;
+        const liqPx = rf && rf.price > 0 ? rf.price * corrFf : null;
+        LIQ[i] = {label:fullLabel, asset:mainG||'', v:liqPx, curPrice:rf?.price||0, dropRatio, hf:curHf, color, note:'queda geral'};
+        renderLiqAlert();
+        return liqPx
+          ? `<div><div class="l">Liquidação ${esc(mainG)} (geral)</div><div class="v">${fmtUsd(liqPx, liqPx < 10 ? 2 : 0)}</div><div class="l">${sgnPct(corrFf-1)}</div></div>`
+          : `<div><div class="l">Queda p/ liquidação</div><div class="v">${sgnPct(corrFf-1)}</div></div>`;
+      }
+
+      // 3) Dívida ativa sem colateral volátil (ex.: stable vs stable): alerta por Health Factor
+      LIQ[i] = {label:fullLabel, asset:'', v:null, curPrice:0, dropRatio:null, hf:curHf, color, note:''};
       renderLiqAlert();
-      return `<div><div class="l">Liquidação BTC</div><div class="v">${fmtUsd(rf.price*lf,0)}</div><div class="l">${sgnPct(lf-1)} vs. ${fmtUsd(rf.price,0)}</div></div>`;
+      return `<div><div class="l">Liquidação</div><div class="v">—</div></div>`;
     };
     const us=m.userState||{ltv:{value:'0'},currentLiquidationThreshold:{value:'0'}};
     const chg = Math.abs(r.net-r0.net)+Math.abs(r.debt-r0.debt)+Math.abs((r.hf||0)-(r0.hf||0))>0.005;
