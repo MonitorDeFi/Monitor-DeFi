@@ -159,9 +159,6 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:20px 0}
 .card > summary::before{content:'▸';color:var(--muted)}
 details[open].card > summary::before{content:'▾'}
 details.card[open] > summary{margin-bottom:10px}
-.linkbtn{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px}
-.linkwarn{align-self:center;color:var(--warn)}
-.linkbtn.ok{color:var(--good);border-color:var(--good)}
 .wchip .wdel{background:transparent;border:0;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1}
 .wchip .wdel:hover{color:var(--bad)}
 .ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:4px 0 6px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
@@ -241,7 +238,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.6.5</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v1.6.6</span>
       <span class="hint" id="lastUpdate"></span>
       <button type="button" class="ghost theme-btn" id="refreshBtn" title="Atualizar somente posições e saldo em carteira">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
@@ -323,6 +320,7 @@ const sameAddr = (a,b) => String(a||'').toLowerCase() === String(b||'').toLowerC
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v1.6.6  Remove o botão "Copiar link com as carteiras" e o aviso ao lado.
    v1.6.5  Remove o campo "Empréstimo (pego / pode pegar)" dos cards de posição
            e das simulações.
    v1.6.4  Ajusta o título do campo "% já pego (% TVL)" para "% Já Pego".
@@ -413,7 +411,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${S
            foco visível, h1/main, aria-live, aria-labels, caption/scope nas tabelas.
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v1.6.5';
+const APP_VERSION = 'v1.6.6';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -2166,7 +2164,6 @@ const isOn = a => WALLETS.some(w=>w.addr===a && w.on);
 const wName = a => (WALLETS.find(w=>w.addr===a)||{}).name || short(a);
 const wNameH = a => esc(wName(a));
 const onWallets = () => STATE ? STATE.wallets.filter(w=>isOn(w.addr)) : [];
-const walletsHash = () => WALLETS.length ? '#w=' + WALLETS.map(w=>w.addr+':'+encodeURIComponent(w.name||'')+(w.on?'':':0')).join(',') : '';
 function walletsFromHash(h){
   const m = /[#&]w=([^&]*)/.exec(h||''); if(!m) return null;
   const out = [];
@@ -2179,7 +2176,6 @@ function walletsFromHash(h){
   }
   return out.length ? out : null;
 }
-function shareLink(){ return location.origin + location.pathname + walletsHash(); }
 function walletValue(w){
   let v = 0;
   for(const r of w.supplies) v += rowUsd(r);
@@ -2196,12 +2192,8 @@ function renderWallets(){
       <span class="wn" data-a="${esc(w.addr)}">${esc(w.name)}</span>
       <span class="hint">${esc(short(w.addr))}</span>
       <span class="wv">${L ? fmtUsd(walletValue(L),0) : 'não carregada'}</span>
-      <button type="button" class="wdel" data-a="${esc(w.addr)}" title="remover carteira" aria-label="Remover ${esc(w.name)}">×</button></div>`; }).join('')
-    + (WALLETS.length ? `<button class="ghost linkbtn" id="linkCopy" title="copia o link desta página já com todas as carteiras"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copiar link com as carteiras</span></button><span class="hint linkwarn">cuidado ao compartilhar</span>` : '');
+      <button type="button" class="wdel" data-a="${esc(w.addr)}" title="remover carteira" aria-label="Remover ${esc(w.name)}">×</button></div>`; }).join('');
   box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{ const w=WALLETS.find(x=>x.addr===cb.dataset.a); if(w){ w.on=cb.checked; saveWallets(); renderAll(); } });
-  const lb = $('#linkCopy'); if(lb) lb.onclick = async()=>{ const url = shareLink(); let ok=true;
-    try{ await navigator.clipboard.writeText(url); }catch(e){ const t=document.createElement('textarea'); t.value=url; document.body.appendChild(t); t.select(); ok=document.execCommand('copy'); t.remove(); }
-    const sp = lb.querySelector('span'); sp.textContent = ok ? 'Link copiado ✓' : 'Copie da barra de endereço'; lb.classList.add('ok'); setTimeout(()=>{ sp.textContent='Copiar link com as carteiras'; lb.classList.remove('ok'); },2000); };
   box.querySelectorAll('.wdel').forEach(b=>b.onclick=()=>{ WALLETS = WALLETS.filter(x=>x.addr!==b.dataset.a); saveWallets(); renderAll(); });
 }
 
