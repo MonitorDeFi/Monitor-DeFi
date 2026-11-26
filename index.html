@@ -266,7 +266,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.0.12</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.1.2</span>
       <span class="hint" id="lastUpdate"></span>
       <label for="autoRefreshSel" class="sr-only">Intervalo de atualização automática</label>
       <select class="hdr-sel" id="autoRefreshSel" title="Atualização automática das posições">
@@ -379,6 +379,8 @@ const sameAddr = (a,b) => String(a||'').toLowerCase() === String(b||'').toLowerC
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v2.1.2  Consolida as melhorias das versões 2.0.8 a 2.0.13 (mobile, alertas, posições, header e busca de saldo).
+   v2.0.13 Posições: remove o texto de ajuda do cabeçalho.
    v2.0.12 Busca de saldo mais rápida: scan começa junto com Aave/Morpho/Venus, sem requisições duplicadas,
            saldo nativo em paralelo, logos só de tokens com preço e sem espera longa.
    v2.0.11 Header: largura fixa nos botões Alertas, Privacidade e Tema (evita mudança de layout).
@@ -393,7 +395,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${S
    v2.0.0  Pacote de melhorias: limpa marcações residuais do HTML, adiciona
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v2.0.12';
+const APP_VERSION = 'v2.1.2';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -2128,7 +2130,7 @@ function setupSim(c,i){
       <input class="sw-amt" type="number" step="any" min="0" placeholder="qtd de ${esc(x.sym)}"><button class="ghost sw-max">máx</button>
       <span class="hint">para</span><select class="sw-to"></select>
       <span class="sw-prev hint"></span><button class="sw-go">Aplicar</button><button class="ghost sw-x">Cancelar</button></div></td></tr>` : ''}`;
-  el.innerHTML = `<div class="row"><b>Posições</b><span class="hint">use o botão de swap para simular trocas</span></div>
+  el.innerHTML = `<div class="row"><b>Posições</b></div>
     <div id="hft${i}"></div>
     <div class="tblwrap"><table class="simtbl"><caption class="sr-only">Posições e simulação</caption><thead><tr><th scope="col">Ativo</th><th scope="col"><span class="sr-only">Tipo</span></th><th scope="col">Quantidade</th><th scope="col">Preço</th><th scope="col">USD</th><th scope="col">APY</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead><tbody>${items.map(qRow).join('')}</tbody></table></div>`;
   const qs = items.map(x=>x.q); items.forEach(x=>x.q=x.q0); const r0 = calc(); items.forEach((x,k)=>x.q=qs[k]);
