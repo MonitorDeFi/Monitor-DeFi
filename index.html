@@ -58,7 +58,11 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;pa
 @media (prefers-reduced-motion:reduce){
   .radar-sweep,.radar-pulse,.radar-ping-a,.radar-ping-b{animation:none}
 }
-.theme-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;font-size:12px;border-radius:10px}
+.theme-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;font-size:12px;border-radius:10px;white-space:nowrap}
+/* largura fixa: o rótulo muda ao clicar (Alertas/Alertas ON, Claro/Escuro, Privacidade/Oculto) e não pode reorganizar o header */
+#notifBtn{min-width:9.5em}
+#privacyBtn{min-width:10em}
+#themeBtn{min-width:7.5em}
 .hdr-sel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:7px 9px;color:var(--text-2);font:600 12px Inter,Segoe UI,system-ui,sans-serif;cursor:pointer}
 .hdr-sel.on{border-color:var(--accent);color:var(--text);background:var(--ghost-on)}
 .priv{transition:filter .18s ease}
@@ -158,13 +162,10 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:20px 0}
   .simtbl td{border:0;padding:0;text-align:left;white-space:normal}
   .simtbl td:nth-child(1){grid-column:1/3}
   .simtbl td:nth-child(2){grid-column:3;text-align:right}
-  .simtbl td.qcell{grid-column:1/-1;display:flex;align-items:center}
-  .simtbl td.qcell::before{display:none}
-  .simtbl input.qty{flex:1;width:auto;font-size:16px}
+  .simtbl td.qcell{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between}
   .simtbl td[data-l]::before{content:attr(data-l);display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
   .simtbl .actcell{grid-column:1/-1;display:flex;gap:8px}
   .simtbl .actcell .swbtn{flex:1;padding:8px}
-  .rpbtn{margin-left:0}
   .simtbl .swrow,.simtbl .swrow td{display:block}
   .swrow .swap{position:static;max-width:none}
   .swap input,.swap select{font-size:16px}
@@ -192,7 +193,8 @@ details.card[open] > summary{margin-bottom:10px}
 .ctrl select{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font:600 13px Inter,Segoe UI,sans-serif;cursor:pointer}
 .ctrl input{width:150px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font:600 14px var(--mono)}
 .ctrl input.set{border-color:var(--warn)}
-.simtbl input.qty{width:140px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font:13px var(--mono);text-align:right}
+.qwrap{display:inline-flex;align-items:center;gap:2px}
+.qval{font:13px var(--mono);font-variant-numeric:tabular-nums}
 .sim .mkt-stats{margin-top:12px}
 .qcell{white-space:nowrap}
 .swap{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
@@ -205,7 +207,6 @@ details.card[open] > summary{margin-bottom:10px}
 .swbtn:hover,.swbtn.on{color:var(--warn);border-color:var(--warn)}
 .swbtn:disabled{opacity:.3;cursor:default}
 .actcell{white-space:nowrap}
-.rpbtn{margin-left:4px;font-size:12px;padding:4px 8px}
 .undo{visibility:hidden;background:transparent;border:0;padding:4px 6px;margin-right:4px;color:var(--warn);vertical-align:middle;cursor:pointer;border-radius:6px}
 .undo.on{visibility:visible}
 .undo:hover{background:rgba(234,179,8,.15)}
@@ -220,7 +221,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
   button{min-height:44px}
   .wchip{min-height:44px}
   .hdr-sel,.ctrl select,.swap select{min-height:44px}
-  .ctrl input,.swap input,.simtbl input.qty{min-height:44px}
+  .ctrl input,.swap input{min-height:44px}
   .wchip input[type=checkbox]{width:24px;height:24px;margin:10px}
   .wchip .wdel,.wchip .wcopy,.undo{min-width:44px}
   .tvbox.locked .tvlock{display:flex;position:absolute;top:10px;left:0;width:100%;height:calc(100% - 10px);align-items:center;justify-content:center;border-radius:10px;background:rgba(11,15,23,.55);color:#fff;font-size:14px}
@@ -265,7 +266,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.0.9</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.0.12</span>
       <span class="hint" id="lastUpdate"></span>
       <label for="autoRefreshSel" class="sr-only">Intervalo de atualização automática</label>
       <select class="hdr-sel" id="autoRefreshSel" title="Atualização automática das posições">
@@ -378,6 +379,10 @@ const sameAddr = (a,b) => String(a||'').toLowerCase() === String(b||'').toLowerC
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v2.0.12 Busca de saldo mais rápida: scan começa junto com Aave/Morpho/Venus, sem requisições duplicadas,
+           saldo nativo em paralelo, logos só de tokens com preço e sem espera longa.
+   v2.0.11 Header: largura fixa nos botões Alertas, Privacidade e Tema (evita mudança de layout).
+   v2.0.10 Posições: quantidade somente leitura e remoção dos botões Repagar.
    v2.0.9  Remove o botão Copiar dos Alertas de Liquidação.
    v2.0.8  Acabamento mobile: safe-area (notch), sem zoom ao focar campos no iOS,
            alvos de toque de 44px em selects/inputs, tap-highlight e metas sociais.
@@ -388,7 +393,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${S
    v2.0.0  Pacote de melhorias: limpa marcações residuais do HTML, adiciona
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v2.0.9';
+const APP_VERSION = 'v2.0.12';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -750,21 +755,54 @@ async function pool(items, limit, fn){
 }
 
 const BS_CACHE = new Map();
+const BS_INFLIGHT = new Map();   // requisições em andamento: chamadas idênticas simultâneas compartilham a mesma
+const TX_CACHE = new Map();
 async function bsGet(host, path, params={}){
   const qs = new URLSearchParams(params).toString();
   const url = `https://${host}/api/v2${path}${qs ? '?' + qs : ''}`;
   if(BS_CACHE.has(url)) return BS_CACHE.get(url);
-  for(let i=0;i<2;i++){
-    try{
-      const r = await fetchT(url, {cache:'no-store'}, 7500);
-      if(r.status === 404) return null;
-      if(!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json();
-      BS_CACHE.set(url, j);
-      return j;
-    }catch(e){ if(i===1) throw new Error(`${host} indisponível`); await new Promise(r=>setTimeout(r,350*(i+1))); }
+  if(BS_INFLIGHT.has(url)) return BS_INFLIGHT.get(url);
+  const run = async () => {
+    for(let i=0;i<2;i++){
+      try{
+        const r = await fetchT(url, {cache:'no-store'}, 7500);
+        if(r.status === 404) return null;
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        BS_CACHE.set(url, j);
+        return j;
+      }catch(e){ if(i===1) throw new Error(`${host} indisponível`); await new Promise(r=>setTimeout(r,350*(i+1))); }
+    }
+    throw new Error(`${host} indisponível`);
+  };
+  const p = run();
+  BS_INFLIGHT.set(url, p);
+  try{ return await p; }
+  finally{ if(BS_INFLIGHT.get(url) === p) BS_INFLIGHT.delete(url); }
+}
+function bsTokentx(host, lower){
+  const url = `https://${host}/api?module=account&action=tokentx&address=${lower}&page=1&offset=300`;
+  if(!TX_CACHE.has(url)){
+    TX_CACHE.set(url, (async()=>{
+      try{ const r = await fetchT(url, {}, 6500); return r.ok ? await r.json() : null; }
+      catch(_e){ return null; }
+    })());
   }
-  throw new Error(`${host} indisponível`);
+  return TX_CACHE.get(url);
+}
+// Dispara cedo (junto com Aave/Morpho/Venus) o que só depende do endereço; fetchHoldings reaproveita os resultados.
+const PRE_NATIVE = new Map();
+function prefetchHoldings(addrs){
+  const jobs = [];
+  for(const u of addrs){
+    PRE_NATIVE.set(u, fetchNativeBalancesEvm({addr:u}, EVM_ALL_CHAINS).catch(()=>new Map()));
+    for(const cid of Object.keys(BLOCKSCOUT).map(Number)) jobs.push([u, BLOCKSCOUT[cid]]);
+  }
+  pool(jobs, 12, ([u, host]) => Promise.allSettled([
+    bsGet(host, `/addresses/${u}`),
+    bsPaged(host, `/addresses/${u}/tokens`, {type:'ERC-20'}, 15),
+    bsTokentx(host, u)
+  ])).catch(()=>{});
 }
 async function bsPaged(host, path, params={}, maxPages=30){
   const items=[]; let next=null, truncated=false;
@@ -1021,6 +1059,7 @@ async function loadAll(addrs){
     renderProtoStatus();
     setStatus('Buscando Aave, Morpho, Venus e cotações…');
     const brlPromise = fetchBrl().then(()=>updateTiles());
+    prefetchHoldings(addrs);
     const chains = (await gql(Q_CHAINS)).chains.filter(c=>!c.isTestnet);
     const chainIds = chains.map(c=>c.chainId);
     const prevByAddr = new Map((STATE?.wallets || []).map(w => [w.addr, w]));
@@ -1047,7 +1086,7 @@ async function loadAll(addrs){
       await synthMarkets(w);
     });
     applyLogoOverrides(wallets);
-    await brlPromise;
+    await Promise.race([brlPromise, new Promise(r=>setTimeout(r,2500))]);   // se atrasar, o tile de BRL atualiza sozinho depois
     renderAll();
     const holdFail = [...new Set(wallets.flatMap(w=>w.holdFail).map(c=>BS_NAME[c]).filter(Boolean))];
     setStatus(holdFail.length ? `Explorador indisponível em ${holdFail.join(', ')} (usada leitura direta via RPC).` : '');
@@ -1263,7 +1302,7 @@ const CG_PLATFORM = {
 
 async function fetchNativeBalancesEvm(w, cids){
   const byCid = new Map();
-  await pool(cids, 12, async cid => {
+  await pool(cids, 24, async cid => {
     const res = await rpcBatch(cid, [{method:'eth_getBalance', params:[w.addr, 'latest']}]);
     if(res && typeof res[0] === 'string' && /^0x[0-9a-f]+$/i.test(res[0]) && !/^0x0*$/.test(res[0])){
       byCid.set(cid, Number(BigInt(res[0])) / 1e18);
@@ -1319,9 +1358,8 @@ async function fetchEvmExplorerTokens(addr, cid){
   }catch(_e){}
 
   try{
-    const r = await fetchT(`https://${host}/api?module=account&action=tokentx&address=${lower}&page=1&offset=300`, {},6500);
-    if(r.ok){
-      const j = await r.json();
+    const j = await bsTokentx(host, lower);
+    if(j){
       if(Array.isArray(j?.result)){
         const candidateMap = new Map();
         for(const tx of j.result){
@@ -1460,15 +1498,10 @@ function pruneAccounted(w){
 }
 async function fetchHoldings(w){
   w.hold=[]; w.holdFail=[]; w.v3hold=[];
-  const nativeMap = await fetchNativeBalancesEvm(w, EVM_ALL_CHAINS);
-  for(const [cid, amt] of nativeMap.entries()){
-    const n = NATIVE[cid];
-    if(n && amt > 0){
-      w.hold.push({chainId:cid, kind:'w', isNative:true, sym:n.sym, usym:n.sym, coin:n.coin, addr:'native', dec:18, amt, priceNow:0, verified:true});
-    }
-  }
+  const nativeP = (PRE_NATIVE.get(w.addr) || fetchNativeBalancesEvm(w, EVM_ALL_CHAINS)).catch(()=>new Map());
+  PRE_NATIVE.delete(w.addr);
   await Promise.all([
-    pool(Object.keys(BLOCKSCOUT).map(Number), 10, async cid=>{
+    pool(Object.keys(BLOCKSCOUT).map(Number), 12, async cid=>{
       const host = BLOCKSCOUT[cid];
       try{
         const [infoRes, toksRes] = await Promise.allSettled([
@@ -1510,8 +1543,8 @@ async function fetchHoldings(w){
         await verifyBalances(w, cid);
       }catch(e){ w.holdFail.push(cid); }
     }),
-    rpcScan(w),
-    pool(Object.keys(BLOCKSCOUT).map(Number), 10, async cid=>{
+    rpcScan(w, true),
+    pool(Object.keys(BLOCKSCOUT).map(Number), 12, async cid=>{
       const evmExtra = await fetchEvmExplorerTokens(w.addr, cid);
       for(const b of evmExtra){
         if(b.scam) continue;
@@ -1529,10 +1562,16 @@ async function fetchHoldings(w){
       }
     })
   ]);
+  for(const [cid, amt] of (await nativeP).entries()){
+    const n = NATIVE[cid];
+    if(n && amt > 0 && !w.hold.some(h=>h.chainId===cid && h.isNative)){
+      w.hold.push({chainId:cid, kind:'w', isNative:true, sym:n.sym, usym:n.sym, coin:n.coin, addr:'native', dec:18, amt, priceNow:0, verified:true});
+    }
+  }
   pruneAccounted(w);
   await refreshHoldPrices([w]);
-  await Promise.race([resolveLogos([w]), new Promise(r=>setTimeout(r,4500))]);
-  w.hold = w.hold.filter(h => h.priceNow > 0);
+  w.hold = w.hold.filter(h => h.priceNow > 0);   // antes dos logos: não busca ícone de token sem preço (nem aparece)
+  await Promise.race([resolveLogos([w]), new Promise(r=>setTimeout(r,1500))]);
   {
     const seen = new Set();
     w.hold = w.hold.filter(h=>{
@@ -1564,14 +1603,14 @@ async function verifyBalances(w, cid){
   w.v3hold = w.v3hold.filter(h=>h.chainId!==cid || h.amt>0);
 }
 
-async function rpcScan(w){
+async function rpcScan(w, skipNative){
   const pad = w.addr.toLowerCase().replace('0x','').padStart(64,'0');
   const cids = [...new Set([...EVM_ALL_CHAINS, ...Object.keys(RPC).map(Number), ...Object.keys(RPC_FALLBACK).map(Number), ...Object.keys(EXTRA_TOKENS).map(Number)])];
-  await pool(cids, 12, async cid=>{
+  await pool(cids, 24, async cid=>{
     const have = w.hold.filter(h=>h.chainId===cid && h.kind==='w');
     const cands = [];
     const n = NATIVE[cid];
-    if(n && !have.some(h=>h.isNative)) cands.push({native:true, n});
+    if(n && !skipNative && !have.some(h=>h.isNative)) cands.push({native:true, n});
     const seen = new Set(have.map(h=>(h.addr||'').toLowerCase()).filter(a=>a && a!=='native'));
     for(const ex of (EXTRA_TOKENS[cid]||[])){
       const a = ex.a.toLowerCase();
@@ -2082,17 +2121,14 @@ function setupSim(c,i){
   const F = SW_FORM[ck] || (SW_FORM[ck] = {});
   const SWAP_ICO = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 3 8l4 4"/><path d="M3 8h14"/><path d="m17 20 4-4-4-4"/><path d="M21 16H7"/></svg>';
   const qRow = (x,j) => `<tr><td>${assetCell(x.cur, m.chain.chainId)}</td><td><span class="pill">${x.kind==='s'?(x.coll?'colateral':'depósito'):'dívida'}</span>${x.added?' <span class="pill" style="border-color:var(--warn);color:var(--warn)">swap</span>':''}</td>
-     <td class="qcell" data-l="Quantidade"><button class="undo" data-j="${j}" title="Voltar ao valor original" aria-label="Voltar ao valor original"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><input class="qty priv" type="number" step="any" min="0" data-j="${j}" value="${+x.q.toFixed(8)}"></td>
+     <td class="qcell" data-l="Quantidade"><span class="qwrap"><button class="undo" data-j="${j}" title="Voltar ao valor original" aria-label="Voltar ao valor original"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><span class="qval priv" data-j="${j}">${+x.q.toFixed(8)}</span></span></td>
      <td id="pr${i}_${j}" data-l="Preço"></td><td id="u${i}_${j}" class="priv" data-l="USD"></td><td data-l="APY">${fmtPct(x.apy)}</td>
-     <td class="actcell">${canSwap?`<button class="swbtn ${F.open===x.key&&F.mode==='swap'?'on':''}" data-j="${j}" data-mode="swap" title="Simular swap de ${esc(x.sym)}" aria-label="Simular swap de ${esc(x.sym)}" ${x.q>0?'':'disabled'}>${SWAP_ICO}</button>`:''}${x.kind==='d'?`<button class="swbtn rpbtn ${F.open===x.key&&F.mode==='ext'?'on':''}" data-j="${j}" data-mode="ext" title="Repagar ${esc(x.sym)}" ${x.q>0?'':'disabled'}>Repagar</button>`:''}${canSwap&&x.kind==='s'&&debts().some(d=>d.q>0)?`<button class="swbtn rpbtn ${F.open===x.key&&F.mode==='repay'?'on':''}" data-j="${j}" data-mode="repay" title="Repagar dívida usando ${esc(x.sym)}" ${x.q>0?'':'disabled'}>Repagar</button>`:''}</td></tr>
-     ${F.open===x.key && x.q>0 && F.mode==='ext' ? `<tr class="swrow"><td colspan="7"><div class="swap" data-j="${j}"><b>Repagar ${esc(x.sym)} com dinheiro de fora</b>
-      <input class="sw-amt" type="number" step="any" min="0" placeholder="qtd de ${esc(x.sym)}"><button class="ghost sw-max">tudo</button>
-      <span class="sw-prev hint"></span><button class="sw-go">Aplicar</button><button class="ghost sw-x">Cancelar</button></div></td></tr>` : ''}
-     ${canSwap && F.open===x.key && x.q>0 && F.mode!=='ext' ? `<tr class="swrow"><td colspan="7"><div class="swap" data-j="${j}"><b>${F.mode==='repay'?`Repagar dívida com ${esc(x.sym)}`:`Swap de ${esc(x.sym)}`}</b>
+     <td class="actcell">${canSwap?`<button class="swbtn ${F.open===x.key&&F.mode==='swap'?'on':''}" data-j="${j}" data-mode="swap" title="Simular swap de ${esc(x.sym)}" aria-label="Simular swap de ${esc(x.sym)}" ${x.q>0?'':'disabled'}>${SWAP_ICO}</button>`:''}</td></tr>
+     ${canSwap && F.open===x.key && x.q>0 ? `<tr class="swrow"><td colspan="7"><div class="swap" data-j="${j}"><b>Swap de ${esc(x.sym)}</b>
       <input class="sw-amt" type="number" step="any" min="0" placeholder="qtd de ${esc(x.sym)}"><button class="ghost sw-max">máx</button>
-      <span class="hint">${F.mode==='repay'?'repaga':'para'}</span><select class="sw-to"></select>
+      <span class="hint">para</span><select class="sw-to"></select>
       <span class="sw-prev hint"></span><button class="sw-go">Aplicar</button><button class="ghost sw-x">Cancelar</button></div></td></tr>` : ''}`;
-  el.innerHTML = `<div class="row"><b>Posições</b><span class="hint">edite a quantidade para simular</span></div>
+  el.innerHTML = `<div class="row"><b>Posições</b><span class="hint">use o botão de swap para simular trocas</span></div>
     <div id="hft${i}"></div>
     <div class="tblwrap"><table class="simtbl"><caption class="sr-only">Posições e simulação</caption><thead><tr><th scope="col">Ativo</th><th scope="col"><span class="sr-only">Tipo</span></th><th scope="col">Quantidade</th><th scope="col">Preço</th><th scope="col">USD</th><th scope="col">APY</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead><tbody>${items.map(qRow).join('')}</tbody></table></div>`;
   const qs = items.map(x=>x.q); items.forEach(x=>x.q=x.q0); const r0 = calc(); items.forEach((x,k)=>x.q=qs[k]);
@@ -2103,6 +2139,8 @@ function setupSim(c,i){
     items.forEach((x,j)=>{
       const uBtn = el.querySelector(`.undo[data-j="${j}"]`);
       if(uBtn) uBtn.classList.toggle('on', x.added || Math.abs(x.q-x.q0)>1e-12);
+      const qv = el.querySelector(`.qval[data-j="${j}"]`);
+      if(qv) qv.textContent = +x.q.toFixed(8);
       const uCell = document.getElementById(`u${i}_${j}`);
       if(uCell) uCell.textContent = fmtUsd(usd(x));
       const pCell = document.getElementById(`pr${i}_${j}`);
@@ -2214,13 +2252,6 @@ function setupSim(c,i){
       }
     }
   };
-  el.querySelectorAll('input.qty').forEach(inp=>inp.addEventListener('input',()=>{
-    const v=parseFloat(inp.value.replace(',','.'));
-    const x=items[+inp.dataset.j];
-    x.q = isFinite(v)&&v>=0 ? v : 0;
-    if(Math.abs(x.q-x.q0)>1e-12) SIM_Q[x.key]=x.q; else delete SIM_Q[x.key];
-    upd();
-  }));
   const setQ = y => { if(Math.abs(y.q-y.q0) <= 1e-9*Math.max(1,y.q0)){ y.q=y.q0; delete SIM_Q[y.key]; } else SIM_Q[y.key]=y.q; };
   el.querySelectorAll('.undo').forEach(btn=>btn.onclick=()=>{
     const j=+btn.dataset.j, x=items[j];
@@ -2240,8 +2271,8 @@ function setupSim(c,i){
       setupSim(c, i);
       return;
     }
-    const inp = el.querySelector(`input.qty[data-j="${j}"]`);
-    if(inp) inp.value = +x.q.toFixed(8);
+    const qv = el.querySelector(`.qval[data-j="${j}"]`);
+    if(qv) qv.textContent = +x.q.toFixed(8);
     upd();
   });
   el.querySelectorAll('.swbtn').forEach(btn=>btn.onclick=()=>{
@@ -2523,7 +2554,7 @@ function addWallet(){
 }
 async function manualRefresh(){
   if(!WALLETS.length){ setStatus('Adicione pelo menos uma carteira.'); return; }
-  BS_CACHE.clear();
+  BS_CACHE.clear(); BS_INFLIGHT.clear(); TX_CACHE.clear();
   liveTick(false);
   await loadAll(WALLETS.map(w=>w.addr));
 }
@@ -2537,7 +2568,7 @@ function go(){
   if($('#stressHint')) $('#stressHint').textContent = 'Simula queda simultânea em todos os ativos voláteis';
   if($('#simAssetLbl')) $('#simAssetLbl').textContent = 'Preço do BTC (US$)';
   $('#wbtc').classList.remove('set'); $('#wbtcHint').textContent='Atualizando preço…';
-  BS_CACHE.clear();
+  BS_CACHE.clear(); BS_INFLIGHT.clear(); TX_CACHE.clear();
   liveTick(true);
   loadAll(addrs);
 }
