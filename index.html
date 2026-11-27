@@ -134,6 +134,17 @@ th:first-child,td:first-child{text-align:left}
 .liq-status-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--good);color:var(--good);background:rgba(34,197,94,.14)}
 .liq-alert.warn .liq-status-pill{border-color:var(--warn);color:var(--warn);background:rgba(234,179,8,.18)}
 .liq-alert.danger .liq-status-pill{border-color:var(--bad);color:var(--bad);background:rgba(239,68,68,.20)}
+.move-alert{margin:10px 0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--accent);background:var(--panel);display:flex;flex-direction:column;gap:6px;font-size:13px}
+.move-alert[hidden]{display:none}
+.mv-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mv-clear{padding:4px 10px;font-size:12px;border-radius:8px}
+.mv{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;padding:7px 0 2px;border-top:1px solid var(--border)}
+.mv-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.mv.in .mv-tag{color:var(--good)}
+.mv.out .mv-tag{color:var(--bad)}
+.mv-main{font-variant-numeric:tabular-nums}
+.mv-usd{color:var(--muted);font-variant-numeric:tabular-nums}
+.mv-meta{color:var(--muted);font-size:12px;margin-left:auto}
 .liq-badges{display:flex;gap:8px;flex-wrap:wrap}
 .liq-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:9px;border:1px solid var(--border);background:var(--panel);font-size:12px;font-variant-numeric:tabular-nums}
 .liq-badge.warn{border-color:var(--warn);background:rgba(234,179,8,.10)}
@@ -266,7 +277,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + carteira, em todas as redes</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.1.2</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.1.4</span>
       <span class="hint" id="lastUpdate"></span>
       <label for="autoRefreshSel" class="sr-only">Intervalo de atualização automática</label>
       <select class="hdr-sel" id="autoRefreshSel" title="Atualização automática das posições">
@@ -274,7 +285,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
         <option value="1">Auto: 1 min</option>
         <option value="5">Auto: 5 min</option>
       </select>
-      <button type="button" class="ghost theme-btn" id="notifBtn" title="Alertas sonoros e notificação em risco crítico (<10% ou HF <1,10)" aria-pressed="false">
+      <button type="button" class="ghost theme-btn" id="notifBtn" title="Alertas sonoros e notificação: risco crítico (<10% ou HF <1,10) e entradas/saídas na carteira" aria-pressed="false">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
         Alertas
       </button>
@@ -322,6 +333,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <div class="fxline" id="fxLine"></div>
     </div>
     <div class="status" id="status" role="status" aria-live="polite"></div>
+  <div class="move-alert" id="moveAlert" role="status" aria-live="polite" hidden></div>
   <!-- Card do gráfico fora de #out: nunca é recriado por buscas/re-renders, então o gráfico permanece aberto -->
   <div class="card" id="btcCard">
     <div class="mkt-head"><h2 id="tvTitle">BTC/USD · TradingView</h2><span class="hint" id="btcNowTxt"></span></div>
@@ -379,6 +391,8 @@ const sameAddr = (a,b) => String(a||'').toLowerCase() === String(b||'').toLowerC
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v2.1.4  Versão atualizada (inclui o alerta de movimentação da v2.1.3).
+   v2.1.3  Alerta de movimentação: avisa entradas e saídas de ativos na carteira (notificação, som e painel).
    v2.1.2  Consolida as melhorias das versões 2.0.8 a 2.0.13 (mobile, alertas, posições, header e busca de saldo).
    v2.0.13 Posições: remove o texto de ajuda do cabeçalho.
    v2.0.12 Busca de saldo mais rápida: scan começa junto com Aave/Morpho/Venus, sem requisições duplicadas,
@@ -395,7 +409,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${S
    v2.0.0  Pacote de melhorias: limpa marcações residuais do HTML, adiciona
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v2.1.2';
+const APP_VERSION = 'v2.1.4';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -428,11 +442,12 @@ function applyAutoRefresh(mins){
   }
   if(AUTO_MIN > 0){
     AUTO_TIMER = setInterval(()=>{
-      if(document.hidden || !WALLETS.length || $('#go')?.disabled) return;
+      if((document.hidden && !NOTIF_ON) || !WALLETS.length || $('#go')?.disabled) return;   // com Alertas ligados, continua em segundo plano
       manualRefresh();
     }, AUTO_MIN * 60 * 1000);
   }
   try{ localStorage.setItem('monitor_defi_auto', String(AUTO_MIN)); }catch(e){}
+  renderMoves();
 }
 
 let NOTIF_ON = false;
@@ -451,6 +466,7 @@ function applyNotif(on, requestPerm){
     try{ Notification.requestPermission().catch(()=>{}); }catch(_e){}
   }
   try{ localStorage.setItem('monitor_defi_notif', NOTIF_ON ? '1' : '0'); }catch(e){}
+  renderMoves();
 }
 function playAlertTone(){
   try{
@@ -484,6 +500,122 @@ function triggerDangerAlert(liqs){
       });
     }catch(_e){}
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Alerta de movimentação: entrada/saída de ativos na carteira.
+   A cada leitura, compara os saldos com a leitura anterior (guardada no aparelho).
+   Só funciona com a aba aberta; use a atualização automática (1 ou 5 min).
+   --------------------------------------------------------------------------- */
+const MOVE_MIN_USD = 2;        // ignora variações menores (poeira, rebase de stETH/aTokens)
+const MOVE_MIN_REL = 0.0002;   // e variações menores que 0,02% do saldo anterior
+const MOVE_KEY = 'monitor_defi_snap';
+let MOVE_SNAP = null, MOVE_BUSY = false, MOVES = [];
+try{ MOVE_SNAP = JSON.parse(localStorage.getItem(MOVE_KEY) || 'null'); }catch(_e){}
+
+function takeMoveSnap(w){
+  const e = {};
+  for(const h of (w.hold || [])){
+    if(hiddenHold(h) || !(h.amt > 0)) continue;
+    const addr = h.isNative ? 'native' : String(h.addr || '').toLowerCase();
+    e[h.chainId + '|' + addr] = {c:h.chainId, s:h.sym || '?', a:addr, d:h.dec || 18, n:h.amt, p:h.priceNow};
+  }
+  return e;
+}
+// Confere direto na rede (RPC) o saldo atual de ativos que sumiram da leitura.
+// Devolve Map chave → saldo atual (número) ou null quando não deu para confirmar.
+async function moveCheckBalances(w, items){
+  const out = new Map();
+  const pad = w.addr.toLowerCase().replace('0x','').padStart(64,'0');
+  const byChain = new Map();
+  for(const it of items){ const c = it[1].c; if(!byChain.has(c)) byChain.set(c, []); byChain.get(c).push(it); }
+  await Promise.all([...byChain].map(async ([cid, arr]) => {
+    const reqs = arr.map(([k,p]) => p.a === 'native'
+      ? {method:'eth_getBalance', params:[w.addr,'latest']}
+      : {method:'eth_call', params:[{to:p.a, data:ERC20_SEL.balanceOf + pad},'latest']});
+    let res = null;
+    try{ res = await rpcBatch(cid, reqs); }catch(_e){}
+    arr.forEach(([k,p], i) => {
+      const r = res && res[i];
+      out.set(k, (typeof r === 'string' && /^0x[0-9a-f]*$/i.test(r)) ? (r === '0x' ? 0 : Number(BigInt(r)) / 10**p.d) : null);
+    });
+  }));
+  return out;
+}
+async function detectMoves(wallets){
+  if(MOVE_BUSY) return;
+  MOVE_BUSY = true;
+  try{
+    const prevAll = MOVE_SNAP || {};
+    const next = {}, events = [];
+    const push = (w, dir, p, amt) => events.push({addr:w.addr, dir, sym:p.s, cid:p.c, amt, usd:amt * p.p});
+    const big = (d, p, before) => Math.abs(d) * p >= MOVE_MIN_USD && Math.abs(d) >= before * MOVE_MIN_REL;
+    for(const w of wallets){
+      const cur = takeMoveSnap(w), prev = prevAll[w.addr];
+      if(!prev){ next[w.addr] = cur; continue; }          // primeira leitura: só registra a base
+      const fail = new Set(w.holdFail || []);              // rede com leitura incompleta: não compara
+      const base = {}, gone = [];
+      for(const [k,p] of Object.entries(prev)) if(fail.has(p.c)) base[k] = p;
+      for(const [k,c] of Object.entries(cur)){
+        if(fail.has(c.c)) continue;
+        base[k] = c;
+        const before = prev[k] ? prev[k].n : 0, d = c.n - before;
+        if(big(d, c.p, before)) push(w, d > 0 ? 'in' : 'out', c, Math.abs(d));
+      }
+      for(const [k,p] of Object.entries(prev)){
+        if(fail.has(p.c) || cur[k] || p.n * p.p < MOVE_MIN_USD) continue;
+        gone.push([k,p]);                                  // sumiu da leitura: confirma na rede antes de avisar
+      }
+      if(gone.length){
+        const chk = await moveCheckBalances(w, gone);
+        for(const [k,p] of gone){
+          const a = chk.get(k);
+          if(a == null){ base[k] = p; continue; }          // sem confirmação: tenta de novo na próxima leitura
+          if(a > 0) base[k] = {...p, n:a};
+          const d = a - p.n;
+          if(big(d, p.p, p.n)) push(w, 'out', p, Math.abs(d));
+        }
+      }
+      next[w.addr] = base;
+    }
+    MOVE_SNAP = next;
+    try{ localStorage.setItem(MOVE_KEY, JSON.stringify(next)); }catch(_e){}
+    if(events.length && NOTIF_ON){
+      events.sort((a,b) => b.usd - a.usd);
+      notifyMoves(events);
+    }
+  }finally{ MOVE_BUSY = false; }
+}
+const moveTxt = e => `${e.dir === 'in' ? '+' : '-'}${fmtNum(e.amt,4)} ${e.sym} (${CH_NAME[e.cid] || e.cid})`;
+function notifyMoves(events){
+  const now = Date.now();
+  MOVES = events.map(e => ({...e, ts:now})).concat(MOVES).slice(0, 30);
+  renderMoves();
+  playAlertTone();
+  if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+    try{
+      const ins = events.filter(e => e.dir === 'in').length, outs = events.length - ins;
+      const title = outs === 0 ? 'Monitor DeFi · Entrada na carteira' : ins === 0 ? 'Monitor DeFi · Saída da carteira' : 'Monitor DeFi · Movimentação na carteira';
+      const line = e => PRIVACY ? `${wName(e.addr)} · ${e.dir === 'in' ? 'entrada' : 'saída'} de ${e.sym}` : `${wName(e.addr)} · ${moveTxt(e)} ≈ ${fmtUsd(e.usd,2)}`;
+      const body = events.slice(0,3).map(line).join('\n') + (events.length > 3 ? `\n+${events.length - 3} movimentações` : '');
+      new Notification(title, {body, tag:'monitor-defi-moves'});
+    }catch(_e){}
+  }
+}
+function renderMoves(){
+  const el = $('#moveAlert'); if(!el) return;
+  const needAuto = NOTIF_ON && AUTO_MIN === 0;
+  if(!MOVES.length && !needAuto){ el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  const rows = MOVES.map(m => {
+    const t = new Date(m.ts).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    return `<div class="mv ${m.dir}"><span class="mv-tag">${m.dir === 'in' ? '↓ Entrada' : '↑ Saída'}</span>`
+      + `<span class="mv-main priv"><b>${esc(moveTxt(m))}</b></span><span class="mv-usd priv">≈ ${fmtUsd(m.usd,2)}</span>`
+      + `<span class="mv-meta">${wNameH(m.addr)} · ${t}</span></div>`;
+  }).join('');
+  el.innerHTML = (MOVES.length ? `<div class="mv-head"><b>Movimentações detectadas</b><button type="button" class="ghost mv-clear" id="mvClear">Limpar</button></div>${rows}` : '')
+    + (needAuto ? '<div class="hint">Para detectar entradas e saídas, ative a atualização automática (1 ou 5 min) e mantenha esta aba aberta.</div>' : '');
+  const b = $('#mvClear'); if(b) b.onclick = () => { MOVES = []; renderMoves(); };
 }
 
 let PROTO_STATUS = {aave:null, morpho:null, venus:null};
@@ -1093,6 +1225,7 @@ async function loadAll(addrs){
     const holdFail = [...new Set(wallets.flatMap(w=>w.holdFail).map(c=>BS_NAME[c]).filter(Boolean))];
     setStatus(holdFail.length ? `Explorador indisponível em ${holdFail.join(', ')} (usada leitura direta via RPC).` : '');
     $('#lastUpdate').textContent = 'Atualizado ' + new Date().toLocaleString('pt-BR');
+    detectMoves(wallets).catch(e => console.warn('detectMoves', e));
   }catch(e){
     console.error(e);
     PROTO_STATUS.aave = false;
