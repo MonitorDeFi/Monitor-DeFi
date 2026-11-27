@@ -283,7 +283,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + Kamino + carteira</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.2.0</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.2.1</span>
       <label for="autoRefreshSel" class="sr-only">Intervalo de atualização automática</label>
       <select class="hdr-sel" id="autoRefreshSel" title="Atualização automática das posições">
         <option value="0">Auto: Manual</option>
@@ -401,6 +401,7 @@ const sameAddr = (a,b) => (isSolAddr(a) || isSolAddr(b)) ? String(a||'').trim() 
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${cid===SOL_CID ? String(addr) : String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v2.2.1  Cabeçalho com botões alinhados ao título, ajuste no texto de doação e linha do Dólar simplificada.
    v2.2.0  Suporte completo à Kamino Finance (Solana) e carteiras Solana (SOL + tokens SPL).
    v2.1.8  Cabeçalho: subtítulo simplificado para "Aave + Morpho + Venus + carteira".
    v2.1.7  Conteúdo volta a ficar mais acima: painel de movimentações vira 1 linha discreta (só vira cartão
@@ -427,7 +428,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${c
    v2.0.0  Pacote de melhorias: limpa marcações residuais do HTML, adiciona
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v2.2.0';
+const APP_VERSION = 'v2.2.1';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -701,8 +702,7 @@ function fxLine(){
   const el = document.getElementById('fxLine'); if(!el) return;
   if(!USD_BRL){ el.innerHTML = '<span class="hint">Dólar: buscando cotação…</span>'; return; }
   el.innerHTML = `<label>Dólar (R$)</label><b>${USD_BRL.toLocaleString('pt-BR',{minimumFractionDigits:4,maximumFractionDigits:4})}</b>`
-    + (FX_PCT!=null ? ` ${sgnPct(FX_PCT)} <span class="hint">no dia</span>` : '')
-    + ` <span class="hint">· ${FX_SRC} · ${new Date(FX_TS).toLocaleTimeString('pt-BR')} · atualização manual</span>`;
+    + (FX_PCT!=null ? ` ${sgnPct(FX_PCT)} <span class="hint">no dia</span>` : '');
 }
 const fmtBrl = (v,d=2) => (v<0?'-':'') + 'R$ ' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
 function valBlock(usd){
