@@ -156,6 +156,17 @@ th:first-child,td:first-child{text-align:left}
 .liq-badge.warn{border-color:var(--warn);background:rgba(234,179,8,.10)}
 .liq-badge.danger{border-color:var(--bad);background:rgba(239,68,68,.12)}
 .liq-badge b{font-family:var(--mono);color:var(--text)}
+.popup-host{position:fixed;top:14px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:min(380px,calc(100vw - 28px));pointer-events:none}
+.popup-toast{pointer-events:auto;background:var(--panel);border:1.5px solid var(--accent);border-radius:12px;padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.48);display:flex;flex-direction:column;gap:6px;font-size:13px;animation:popupSlideIn .22s ease-out}
+.popup-toast.hf{border-color:var(--bad)}
+.popup-toast.move{border-color:var(--accent)}
+.popup-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:700}
+.popup-toast.hf .popup-title{color:var(--bad)}
+.popup-toast.move .popup-title{color:var(--accent)}
+.popup-close{background:transparent;border:0;color:var(--muted);padding:2px 6px;font-size:18px;line-height:1;border-radius:6px;cursor:pointer}
+.popup-close:hover{color:var(--text);background:var(--hover-bg)}
+.popup-body{color:var(--text);display:flex;flex-direction:column;gap:3px;font-size:12.5px;font-variant-numeric:tabular-nums}
+@keyframes popupSlideIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 details summary{cursor:pointer;color:var(--text-2)}
 .donate-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:18px 0 4px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .donate-info{display:flex;align-items:center;gap:10px;min-width:0}
@@ -283,7 +294,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + Kamino + carteira</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.2.1</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.2.2</span>
       <label for="autoRefreshSel" class="sr-only">Intervalo de atualização automática</label>
       <select class="hdr-sel" id="autoRefreshSel" title="Atualização automática das posições">
         <option value="0">Auto: Manual</option>
@@ -305,6 +316,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <button type="button" class="ghost theme-btn" id="themeBtn" aria-label="Alternar tema"></button>
     </div>
   </header>
+  <div class="popup-host" id="popupToastHost" aria-live="assertive"></div>
   <main>
     <div class="search">
       <label for="addr" class="sr-only">Endereço da carteira EVM ou Solana</label>
@@ -401,6 +413,8 @@ const sameAddr = (a,b) => (isSolAddr(a) || isSolAddr(b)) ? String(a||'').trim() 
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${cid===SOL_CID ? String(addr) : String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v2.2.2  Corrige pop-ups de alerta de HF/liquidação e de movimentação na carteira para dispararem
+           repetidamente sem precisar atualizar a página com F5 (tag única, pop-up na tela e RPC em tempo real).
    v2.2.1  Cabeçalho com botões alinhados ao título, ajuste no texto de doação e linha do Dólar simplificada.
    v2.2.0  Suporte completo à Kamino Finance (Solana) e carteiras Solana (SOL + tokens SPL).
    v2.1.8  Cabeçalho: subtítulo simplificado para "Aave + Morpho + Venus + carteira".
@@ -428,7 +442,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${c
    v2.0.0  Pacote de melhorias: limpa marcações residuais do HTML, adiciona
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v2.2.1';
+const APP_VERSION = 'v2.2.2';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -471,6 +485,60 @@ function applyAutoRefresh(mins){
 
 let NOTIF_ON = false;
 let LAST_ALERT_SIG = '', LAST_ALERT_TS = 0;
+let SUPPRESS_LIQ_RENDER = false;
+let NOTIF_SEQ = 0;
+const ACTIVE_OS_NOTIFS = {};
+const ACTIVE_POPUP_TIMERS = {};
+let SHARED_AUDIO_CTX = null;
+
+function ensureAudioCtx(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return null;
+    if(!SHARED_AUDIO_CTX || SHARED_AUDIO_CTX.state === 'closed') SHARED_AUDIO_CTX = new Ctx();
+    if(SHARED_AUDIO_CTX.state === 'suspended') SHARED_AUDIO_CTX.resume().catch(()=>{});
+    return SHARED_AUDIO_CTX;
+  }catch(_e){ return null; }
+}
+document.addEventListener('click', () => { if(NOTIF_ON) ensureAudioCtx(); }, {passive:true});
+
+function dismissAlertPopup(kind){
+  if(ACTIVE_POPUP_TIMERS[kind]){ clearTimeout(ACTIVE_POPUP_TIMERS[kind]); delete ACTIVE_POPUP_TIMERS[kind]; }
+  const host = document.getElementById('popupToastHost');
+  const old = host?.querySelector(`.popup-toast[data-kind="${kind}"]`);
+  if(old) old.remove();
+}
+
+function showAlertPopup(kind, title, lines){
+  const host = document.getElementById('popupToastHost');
+  if(!host) return;
+  dismissAlertPopup(kind);
+  const box = document.createElement('div');
+  box.className = `popup-toast ${kind}`;
+  box.dataset.kind = kind;
+  box.setAttribute('role', 'alert');
+  const bodyHtml = (Array.isArray(lines) ? lines : [lines]).filter(Boolean).map(l => `<div class="priv">${esc(l)}</div>`).join('');
+  box.innerHTML = `<div class="popup-head"><span class="popup-title">${esc(title)}</span><button type="button" class="popup-close" aria-label="Fechar aviso" title="Fechar">×</button></div><div class="popup-body">${bodyHtml}</div>`;
+  const closeBtn = box.querySelector('.popup-close');
+  if(closeBtn) closeBtn.onclick = () => dismissAlertPopup(kind);
+  host.appendChild(box);
+  ACTIVE_POPUP_TIMERS[kind] = setTimeout(() => dismissAlertPopup(kind), 12000);
+}
+
+function sendBrowserNotif(kind, title, body){
+  if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  try{
+    if(ACTIVE_OS_NOTIFS[kind]){
+      try{ ACTIVE_OS_NOTIFS[kind].close(); }catch(_e){}
+      delete ACTIVE_OS_NOTIFS[kind];
+    }
+    const tag = `monitor-defi-${kind}-${Date.now()}-${++NOTIF_SEQ}`;
+    const n = new Notification(title, {body, tag});
+    ACTIVE_OS_NOTIFS[kind] = n;
+    n.onclick = () => { try{ window.focus(); n.close(); }catch(_e){} };
+  }catch(_e){}
+}
+
 function applyNotif(on, requestPerm){
   NOTIF_ON = !!on;
   const btn = $('#notifBtn');
@@ -481,18 +549,24 @@ function applyNotif(on, requestPerm){
       ? '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Alertas ON'
       : '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Alertas';
   }
-  if(NOTIF_ON && requestPerm && typeof Notification !== 'undefined' && Notification.permission === 'default'){
-    try{ Notification.requestPermission().catch(()=>{}); }catch(_e){}
+  if(NOTIF_ON){
+    ensureAudioCtx();
+    if(requestPerm && typeof Notification !== 'undefined' && Notification.permission === 'default'){
+      try{ Notification.requestPermission().catch(()=>{}); }catch(_e){}
+    }
   }
   try{ localStorage.setItem('monitor_defi_notif', NOTIF_ON ? '1' : '0'); }catch(e){}
   if(NOTIF_ON && requestPerm && AUTO_MIN === 0) applyAutoRefresh(5);   // alerta de movimentação precisa verificar sozinho
   renderMoves();
+  if(NOTIF_ON && requestPerm && STATE){
+    LAST_ALERT_SIG = ''; LAST_ALERT_TS = 0;
+    renderLiqAlert();
+  }
 }
 function playAlertTone(){
   try{
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if(!Ctx) return;
-    const ctx = new Ctx();
+    const ctx = ensureAudioCtx();
+    if(!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -502,24 +576,19 @@ function playAlertTone(){
     gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
     osc.connect(gain); gain.connect(ctx.destination);
     osc.start(); osc.stop(ctx.currentTime + 0.36);
-    setTimeout(()=>{ try{ ctx.close(); }catch(_e){} }, 500);
   }catch(_e){}
 }
 function triggerDangerAlert(liqs){
-  if(!NOTIF_ON || !liqs.length) return;
-  const sig = liqs.map(l=>`${l.label}:${l.v?l.v.toFixed(0):'hf'}`).join('|');
+  if(!liqs.length) return;
+  const sig = liqs.map(l=>`${l.label}:${l.v?l.v.toFixed(0):'hf'}:${l.hf!=null&&isFinite(l.hf)?l.hf.toFixed(2):''}:${l.dropRatio!=null?l.dropRatio.toFixed(3):''}`).join('|');
   const now = Date.now();
-  if(sig === LAST_ALERT_SIG && now - LAST_ALERT_TS < 300000) return;
+  if(sig === LAST_ALERT_SIG && now - LAST_ALERT_TS < 60000) return;
   LAST_ALERT_SIG = sig; LAST_ALERT_TS = now;
+  const lines = liqs.slice(0, 3).map(l => `${l.label}${l.v ? ` · Liquidação em ${l.asset||'BTC'} ${fmtUsd(l.v,2)}` : ''}${l.hf != null && isFinite(l.hf) ? ` · HF ${hfTxt(l.hf)}` : ''}`);
+  showAlertPopup('hf', '▲ Alerta Crítico de HF / Liquidação', lines);
+  if(!NOTIF_ON) return;
   playAlertTone();
-  if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
-    try{
-      const top = liqs[0];
-      new Notification('Monitor DeFi · Alerta Crítico de Liquidação', {
-        body: `${top.label}${top.v ? ` · Liquidação em ${top.asset||'BTC'} ${fmtUsd(top.v,2)}` : ''}${top.hf ? ` · HF ${hfTxt(top.hf)}` : ''}`
-      });
-    }catch(_e){}
-  }
+  sendBrowserNotif('hf', 'Monitor DeFi · Alerta Crítico de Liquidação', lines.join('\n'));
 }
 
 /* ---------------------------------------------------------------------------
@@ -550,7 +619,7 @@ async function moveCheckBalances(w, items){
     const solMap = await fetchSolBalancesMap(w.addr);
     for(const [k,p] of items){
       if(!solMap) { out.set(k, null); continue; }
-      const key = p.a === 'native' ? 'SOL' : p.a;
+      const key = p.a === 'native' ? 'native' : p.a;
       out.set(k, solMap.has(key) ? solMap.get(key) : 0);
     }
     return out;
@@ -583,17 +652,14 @@ async function detectMoves(wallets){
     for(const w of wallets){
       const cur = takeMoveSnap(w), prev = prevAll[w.addr];
       if(!prev || !Object.keys(prev).length){ next[w.addr] = cur; first = true; continue; }   // primeira leitura: só registra a base
-      const fail = new Set(w.holdFail || []);              // rede com leitura incompleta: não compara
       const base = {}, gone = [];
-      for(const [k,p] of Object.entries(prev)) if(fail.has(p.c)) base[k] = p;
       for(const [k,c] of Object.entries(cur)){
-        if(fail.has(c.c)) continue;
         base[k] = c;
         const before = prev[k] ? prev[k].n : 0, d = c.n - before;
         if(big(d, c.p, before)) push(w, d > 0 ? 'in' : 'out', c, Math.abs(d));
       }
       for(const [k,p] of Object.entries(prev)){
-        if(fail.has(p.c) || cur[k] || p.n * p.p < MOVE_MIN_USD) continue;
+        if(cur[k] || p.n * p.p < MOVE_MIN_USD) continue;
         gone.push([k,p]);                                  // sumiu da leitura: confirma na rede antes de avisar
       }
       if(gone.length){
@@ -603,7 +669,7 @@ async function detectMoves(wallets){
           if(a == null){ base[k] = p; continue; }          // sem confirmação: tenta de novo na próxima leitura
           if(a > 0) base[k] = {...p, n:a};
           const d = a - p.n;
-          if(big(d, p.p, p.n)) push(w, 'out', p, Math.abs(d));
+          if(big(d, p.p, p.n)) push(w, d > 0 ? 'in' : 'out', p, Math.abs(d));
         }
       }
       next[w.addr] = base;
@@ -620,17 +686,15 @@ function notifyMoves(events){
   const now = Date.now();
   MOVES = events.map(e => ({...e, ts:now})).concat(MOVES).slice(0, 30);
   renderMoves();
+  const ins = events.filter(e => e.dir === 'in').length, outs = events.length - ins;
+  const title = outs === 0 ? 'Monitor DeFi · Entrada na carteira' : ins === 0 ? 'Monitor DeFi · Saída da carteira' : 'Monitor DeFi · Movimentação na carteira';
+  const line = e => PRIVACY ? `${wName(e.addr)} · ${e.dir === 'in' ? 'entrada' : 'saída'} de ${e.sym}` : `${wName(e.addr)} · ${moveTxt(e)} ≈ ${fmtUsd(e.usd,2)}`;
+  const lines = events.slice(0, 3).map(line);
+  if(events.length > 3) lines.push(`+${events.length - 3} movimentações`);
+  showAlertPopup('move', title, lines);
   if(!NOTIF_ON) return;
   playAlertTone();
-  if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
-    try{
-      const ins = events.filter(e => e.dir === 'in').length, outs = events.length - ins;
-      const title = outs === 0 ? 'Monitor DeFi · Entrada na carteira' : ins === 0 ? 'Monitor DeFi · Saída da carteira' : 'Monitor DeFi · Movimentação na carteira';
-      const line = e => PRIVACY ? `${wName(e.addr)} · ${e.dir === 'in' ? 'entrada' : 'saída'} de ${e.sym}` : `${wName(e.addr)} · ${moveTxt(e)} ≈ ${fmtUsd(e.usd,2)}`;
-      const body = events.slice(0,3).map(line).join('\n') + (events.length > 3 ? `\n+${events.length - 3} movimentações` : '');
-      new Notification(title, {body, tag:'monitor-defi-moves'});
-    }catch(_e){}
-  }
+  sendBrowserNotif('move', title, lines.join('\n'));
 }
 function renderMoves(){
   const el = $('#moveAlert'); if(!el) return;
@@ -899,22 +963,23 @@ function setWbtc(val){
 }
 
 async function fetchT(url, opts={}, ms=9000){
+  const reqOpts = {cache:'no-store', ...opts};
   if(typeof AbortController !== 'undefined'){
     const ac = new AbortController();
     const t = setTimeout(()=>ac.abort(), ms);
     try{
-      return await fetch(url, {...opts, signal:ac.signal});
+      return await fetch(url, {...reqOpts, signal:ac.signal});
     }catch(e){
       if(e && e.name === 'DataCloneError'){
         clearTimeout(t);
-        return await Promise.race([fetch(url, opts), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
+        return await Promise.race([fetch(url, reqOpts), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
       }
       throw e;
     }finally{
       clearTimeout(t);
     }
   }
-  return await Promise.race([fetch(url, opts), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
+  return await Promise.race([fetch(url, reqOpts), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
 }
 async function gql(query, variables={}){
   for(let i=0;i<2;i++){
@@ -1456,6 +1521,8 @@ async function loadWalletCore(u, chainIds){
 async function loadAll(addrs){
   $('#go').disabled = true;
   if($('#addW')) $('#addW').disabled = true;
+  BS_CACHE.clear(); BS_INFLIGHT.clear(); TX_CACHE.clear(); PRE_NATIVE.clear();
+  LAST_ALERT_SIG = ''; LAST_ALERT_TS = 0;
   try{
     PROTO_STATUS = {aave:null, morpho:null, venus:null, kamino:null};
     renderProtoStatus();
@@ -1734,7 +1801,7 @@ async function fetchEvmExplorerTokens(addr, cid){
   if(!host) return [];
   const found = [];
   const lower = addr.toLowerCase();
-  const pushTok = (address, sym, name, dec, rawVal, priceNow, icon, scam) => {
+  const pushTok = (address, sym, name, dec, rawVal, priceNow, icon, scam, verified=false) => {
     if(!address || !/^0x[0-9a-f]{40}$/i.test(address)) return;
     const a = address.toLowerCase();
     const d = Number.isFinite(+dec) && +dec >= 0 && +dec <= 36 ? +dec : 18;
@@ -1746,7 +1813,10 @@ async function fetchEvmExplorerTokens(addr, cid){
     if(!priceNow && (!cleanSym || cleanSym.length>18 || /http|www\.|\.com|\.io|\.xyz|claim|airdrop|voucher|reward/i.test(cleanSym + ' ' + String(name||'')))) return;
     const prev = found.find(x => x.addr === a);
     if(prev){
-      if(amt > prev.amt) prev.amt = amt;
+      if(verified || (!prev.verified && amt > prev.amt)){
+        prev.amt = amt;
+        prev.verified = prev.verified || verified;
+      }
       if(!prev.priceNow && priceNow > 0) prev.priceNow = priceNow;
       return;
     }
@@ -1758,7 +1828,8 @@ async function fetchEvmExplorerTokens(addr, cid){
       amt,
       priceNow: 0,
       icon: icon || logoFor(cid, a, cleanSym),
-      scam: false
+      scam: false,
+      verified: !!verified
     });
   };
 
@@ -1768,7 +1839,7 @@ async function fetchEvmExplorerTokens(addr, cid){
       const j = await bsGet(host, `/addresses/${lower}/tokens`, {type:'ERC-20', ...(next||{})});
       for(const item of (j?.items||[])){
         const tok = item.token || {};
-        pushTok(tok.address_hash || tok.address, tok.symbol, tok.name, tok.decimals, item.value, +tok.exchange_rate || 0, tok.icon_url, tok.reputation === 'scam');
+        pushTok(tok.address_hash || tok.address, tok.symbol, tok.name, tok.decimals, item.value, +tok.exchange_rate || 0, tok.icon_url, tok.reputation === 'scam', false);
       }
       if(!j?.next_page_params) break;
       next = j.next_page_params;
@@ -1782,7 +1853,7 @@ async function fetchEvmExplorerTokens(addr, cid){
         const candidateMap = new Map();
         for(const tx of j.result){
           const contract = (tx.contractAddress || '').toLowerCase();
-          if(!contract || found.some(x => x.addr === contract) || candidateMap.has(contract)) continue;
+          if(!contract || candidateMap.has(contract)) continue;
           candidateMap.set(contract, {
             sym: tx.tokenSymbol || 'TOKEN',
             name: tx.tokenName || '',
@@ -1813,7 +1884,7 @@ async function fetchEvmExplorerTokens(addr, cid){
               const sym = decodeAbiString(metaRes[idx*2]) || ac.meta.sym;
               const decVal = decodeAbiUint(metaRes[idx*2+1]);
               const dec = (decVal != null && decVal >= 0 && decVal <= 36) ? decVal : ac.meta.dec;
-              pushTok(ac.contract, sym, ac.meta.name, dec, ac.rawBal.toString(), 0, '', false);
+              pushTok(ac.contract, sym, ac.meta.name, dec, ac.rawBal.toString(), 0, '', false, true);
             });
           }
         }
@@ -1916,7 +1987,41 @@ function pruneAccounted(w){
 }
 async function fetchSolBalancesMap(addr){
   const out = new Map();
-  let ok = false;
+  let rpcOk = false;
+  for(const rpcUrl of ['https://solana-rpc.publicnode.com', 'https://api.mainnet-beta.solana.com']){
+    try{
+      const payload = [
+        {jsonrpc:'2.0', id:1, method:'getBalance', params:[addr, {commitment:'confirmed'}]},
+        {jsonrpc:'2.0', id:2, method:'getTokenAccountsByOwner', params:[addr, {programId:'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'}, {encoding:'jsonParsed', commitment:'confirmed'}]},
+        {jsonrpc:'2.0', id:3, method:'getTokenAccountsByOwner', params:[addr, {programId:'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'}, {encoding:'jsonParsed', commitment:'confirmed'}]}
+      ];
+      const r = await fetchT(rpcUrl, {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload)}, 7000);
+      if(!r.ok) continue;
+      const arr = await r.json();
+      if(!Array.isArray(arr)) continue;
+      for(const item of arr){
+        if(item?.id === 1 && item?.result?.value != null){
+          rpcOk = true;
+          const lamports = +item.result.value || 0;
+          if(lamports > 0) out.set('native', lamports / 1e9);
+        }else if((item?.id === 2 || item?.id === 3) && Array.isArray(item?.result?.value)){
+          rpcOk = true;
+          for(const acc of item.result.value){
+            const info = acc?.account?.data?.parsed?.info;
+            const mint = info?.mint;
+            const amt = +(info?.tokenAmount?.uiAmount ?? 0);
+            if(!mint || !(amt > 0)) continue;
+            if(mint === 'So11111111111111111111111111111111111111112'){
+              out.set('native', (out.get('native') || 0) + amt);
+            }else{
+              out.set(mint, (out.get(mint) || 0) + amt);
+            }
+          }
+        }
+      }
+      if(rpcOk) return out;
+    }catch(_e){}
+  }
   for(const ep of ['https://lite-api.jup.ag/ultra/v1/balances/', 'https://api.jup.ag/ultra/v1/balances/']){
     try{
       const r = await fetchT(ep + addr, {cache:'no-store'}, 7000);
@@ -1932,31 +2037,17 @@ async function fetchSolBalancesMap(addr){
             out.set(k, amt);
           }
         }
-        ok = true;
-        break;
+        return out;
       }
     }catch(_e){}
   }
-  if(!ok){
-    try{
-      const r = await fetchT('https://solana-rpc.publicnode.com', {
-        method:'POST',
-        headers:{'content-type':'application/json'},
-        body:JSON.stringify({jsonrpc:'2.0', id:1, method:'getBalance', params:[addr]})
-      }, 6500);
-      if(r.ok){
-        const j = await r.json();
-        const lamports = +(j?.result?.value ?? 0);
-        if(lamports > 0) out.set('native', lamports / 1e9);
-      }
-    }catch(_e){}
-  }
-  return out;
+  return null;
 }
 
 async function fetchSolHoldings(w){
   w.hold = []; w.holdFail = []; w.v3hold = [];
   const balMap = await fetchSolBalancesMap(w.addr);
+  if(!balMap){ w.holdFail.push(SOL_CID); return; }
   const natAmt = balMap.get('native') || 0;
   if(natAmt > 0){
     const n = NATIVE[SOL_CID];
@@ -1994,11 +2085,10 @@ async function fetchHoldings(w){
           const natAmt = +info.coin_balance/1e18;
           const existingNat = w.hold.find(h=>h.chainId===cid && h.isNative);
           if(existingNat){
-            if(natAmt > 0) existingNat.amt = natAmt;
+            if(!existingNat.verified && natAmt > 0) existingNat.amt = natAmt;
             if(+info.exchange_rate > 0) existingNat.priceNow = +info.exchange_rate;
-            existingNat.verified = true;
           }else if(n){
-            w.hold.push({chainId:cid, kind:'w', isNative:true, sym:n.sym, usym:n.sym, coin:n.coin, addr:'native', dec:18, amt:natAmt, priceNow:+info.exchange_rate||0, verified:true});
+            w.hold.push({chainId:cid, kind:'w', isNative:true, sym:n.sym, usym:n.sym, coin:n.coin, addr:'native', dec:18, amt:natAmt, priceNow:+info.exchange_rate||0, verified:false});
           }
         }
         const v3map = v3TokenMap(w, cid);
@@ -2014,7 +2104,10 @@ async function fetchHoldings(w){
           if(tok.reputation==='scam') continue;
           if(!tok.exchange_rate && (!tok.symbol || tok.symbol.length>18 || /http|www\.|\.com|\.io|\.xyz|claim|airdrop|voucher|reward/i.test((tok.symbol||'')+(tok.name||'')))) continue;
           const amt = Number(t.value)/10**(+tok.decimals||18); if(!(amt>0)) continue;
-          w.hold.push({chainId:cid, kind:'w', sym:tok.symbol, usym:c.usym, addr:c.addr, priceAddr:c.priceAddr, icon:tok.icon_url, dec:+tok.decimals||18, amt, priceNow:0});
+          const exIdx = w.hold.findIndex(h=>h.chainId===cid && sameAddr(h.addr, c.addr));
+          if(exIdx === -1){
+            w.hold.push({chainId:cid, kind:'w', sym:tok.symbol, usym:c.usym, addr:c.addr, priceAddr:c.priceAddr, icon:tok.icon_url, dec:+tok.decimals||18, amt, priceNow:0, verified:false});
+          }
         }
         await verifyBalances(w, cid);
       }catch(e){ w.holdFail.push(cid); }
@@ -2029,9 +2122,9 @@ async function fetchHoldings(w){
           w.hold.push({
             chainId:cid, kind:'w', sym:b.sym, usym:b.usym, addr:b.addr, priceAddr:b.addr,
             icon:b.icon || logoFor(cid, b.addr, b.sym),
-            dec:b.dec, amt:b.amt, priceNow:0, verified:true
+            dec:b.dec, amt:b.amt, priceNow:0, verified:!!b.verified
           });
-        }else if(b.amt > 0){
+        }else if(b.verified && b.amt > 0){
           w.hold[idx].amt = b.amt;
           w.hold[idx].verified = true;
         }
@@ -2040,9 +2133,18 @@ async function fetchHoldings(w){
   ]);
   for(const [cid, amt] of (await nativeP).entries()){
     const n = NATIVE[cid];
-    if(n && amt > 0 && !w.hold.some(h=>h.chainId===cid && h.isNative)){
-      w.hold.push({chainId:cid, kind:'w', isNative:true, sym:n.sym, usym:n.sym, coin:n.coin, addr:'native', dec:18, amt, priceNow:0, verified:true});
+    if(!n) continue;
+    const exNat = w.hold.find(h=>h.chainId===cid && h.isNative);
+    if(amt > 0){
+      if(exNat){ exNat.amt = amt; exNat.verified = true; }
+      else w.hold.push({chainId:cid, kind:'w', isNative:true, sym:n.sym, usym:n.sym, coin:n.coin, addr:'native', dec:18, amt, priceNow:0, verified:true});
+    }else if(exNat){
+      w.hold = w.hold.filter(h => h !== exNat);
     }
+  }
+  const unverifiedCids = [...new Set([...w.hold.filter(h=>!h.verified).map(h=>h.chainId), ...w.v3hold.filter(h=>!h.verified).map(h=>h.chainId)])];
+  if(unverifiedCids.length){
+    await pool(unverifiedCids, 12, cid => verifyBalances(w, cid));
   }
   pruneAccounted(w);
   await refreshHoldPrices([w]);
@@ -2081,13 +2183,21 @@ async function verifyBalances(w, cid){
 
 async function rpcScan(w, skipNative){
   const pad = w.addr.toLowerCase().replace('0x','').padStart(64,'0');
+  const prevSnap = (MOVE_SNAP && MOVE_SNAP[w.addr]) ? Object.values(MOVE_SNAP[w.addr]) : [];
   const cids = [...new Set([...EVM_ALL_CHAINS, ...Object.keys(RPC).map(Number), ...Object.keys(RPC_FALLBACK).map(Number), ...Object.keys(EXTRA_TOKENS).map(Number)])];
   await pool(cids, 24, async cid=>{
     const have = w.hold.filter(h=>h.chainId===cid && h.kind==='w');
     const cands = [];
     const n = NATIVE[cid];
     if(n && !skipNative && !have.some(h=>h.isNative)) cands.push({native:true, n});
-    const seen = new Set(have.map(h=>(h.addr||'').toLowerCase()).filter(a=>a && a!=='native'));
+    const seen = new Set(have.filter(h=>h.verified).map(h=>(h.addr||'').toLowerCase()).filter(a=>a && a!=='native'));
+    for(const p of prevSnap){
+      if(+p.c !== cid || !p.a || p.a === 'native') continue;
+      const a = String(p.a).toLowerCase();
+      if(seen.has(a)) continue;
+      seen.add(a);
+      cands.push({addr:a, sym:p.s||'TOKEN', usym:String(p.s||'TOKEN').replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT'), dec:p.d||18, priceNow:+p.p||0});
+    }
     for(const ex of (EXTRA_TOKENS[cid]||[])){
       const a = ex.a.toLowerCase();
       if(seen.has(a)) continue;
@@ -2141,7 +2251,18 @@ async function rpcScan(w, skipNative){
         const amt = Number(item.rawBal) / 10**dec;
         if(!(amt>0)) return;
         const usym = sym.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT');
-        w.hold.push({chainId:cid, kind:'w', sym, usym, addr:item.c.addr, priceAddr:item.c.addr, icon:logoFor(cid, item.c.addr, sym), dec, amt, priceNow:item.c.priceNow, verified:true, trusted:true});
+        const exIdx = w.hold.findIndex(h=>h.chainId===cid && sameAddr(h.addr, item.c.addr));
+        if(exIdx !== -1){
+          w.hold[exIdx].amt = amt;
+          w.hold[exIdx].dec = dec;
+          w.hold[exIdx].sym = sym;
+          w.hold[exIdx].usym = usym;
+          if(!w.hold[exIdx].priceNow && item.c.priceNow > 0) w.hold[exIdx].priceNow = item.c.priceNow;
+          w.hold[exIdx].verified = true;
+          w.hold[exIdx].trusted = true;
+        }else{
+          w.hold.push({chainId:cid, kind:'w', sym, usym, addr:item.c.addr, priceAddr:item.c.addr, icon:logoFor(cid, item.c.addr, sym), dec, amt, priceNow:item.c.priceNow, verified:true, trusted:true});
+        }
       });
     }
   });
@@ -2203,16 +2324,21 @@ async function refreshHoldPrices(wallets){
     }catch(_e){}
   });
   let changed = false;
-  for(const h of hs){
-    const k = (idOf(h)||'').toLowerCase();
-    if((!h.sym || h.sym === 'TOKEN') && symMeta[k]){
-      h.sym = symMeta[k];
-      h.usym = h.sym.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT');
-      h.icon = logoFor(h.chainId, h.addr, h.sym);
+  for(const w of wallets){
+    const prevSnap = (MOVE_SNAP && MOVE_SNAP[w.addr]) || {};
+    for(const h of (w.hold || [])){
+      const k = (idOf(h)||'').toLowerCase();
+      const addrKey = h.isNative ? 'native' : (h.chainId === SOL_CID ? String(h.addr || '') : String(h.addr || '').toLowerCase());
+      const prevEntry = prevSnap[h.chainId + '|' + addrKey];
+      if((!h.sym || h.sym === 'TOKEN') && (symMeta[k] || prevEntry?.s)){
+        h.sym = symMeta[k] || prevEntry.s;
+        h.usym = h.sym.replace(/\.e$/i,'').replace(/^USDT0$/i,'USDT');
+        h.icon = logoFor(h.chainId, h.addr, h.sym);
+      }
+      const sc = (h.isNative || h.trusted) ? symCoin(h.usym||h.sym) : null;
+      const p = px[k] || (sc==='STABLE' ? 1 : sc ? px[sc.toLowerCase()] : 0) || (prevEntry?.p > 0 ? +prevEntry.p : 0);
+      if(p && Math.abs(p-(h.priceNow||0))>1e-9){ h.priceNow = p; h.pxSrc = 'DefiLlama'; changed = true; }
     }
-    const sc = (h.isNative || h.trusted) ? symCoin(h.usym||h.sym) : null;
-    const p = px[k] || (sc==='STABLE' ? 1 : sc ? px[sc.toLowerCase()] : 0);
-    if(p && Math.abs(p-(h.priceNow||0))>1e-9){ h.priceNow = p; h.pxSrc = 'DefiLlama'; changed = true; }
   }
   return changed;
 }
@@ -2435,6 +2561,7 @@ function updateTvHeader(){
 }
 
 function renderLiqAlert(){
+  if(SUPPRESS_LIQ_RENDER) return;
   const box = $('#liqAlertBox');
   if(!box) return;
   const liqs = Object.values(LIQ).filter(Boolean).sort((a,b)=>{
@@ -2444,6 +2571,8 @@ function renderLiqAlert(){
   });
   syncSimAssetFromLiq(liqs);
   if(!liqs.length){
+    LAST_ALERT_SIG = ''; LAST_ALERT_TS = 0;
+    dismissAlertPopup('hf');
     box.className = 'liq-alert';
     box.innerHTML = `<div class="liq-alert-head">
       <div class="row"><span class="liq-status-pill">● Monitoramento ativo</span><b>Alertas de Liquidação (Aave, Morpho, Venus, Kamino)</b></div>
@@ -2457,9 +2586,9 @@ function renderLiqAlert(){
     const dropRatio = l.dropRatio != null ? l.dropRatio : (l.curPrice > 0 && l.v > 0 ? (l.curPrice - l.v) / l.curPrice : null);
     const hfBad = l.hf != null && isFinite(l.hf) && l.hf < 1.10;
     const hfWarn = l.hf != null && isFinite(l.hf) && l.hf < 1.5;
-    const lvl = dropRatio != null
-      ? (dropRatio < 0.10 ? 'danger' : (dropRatio < 0.40 || hfWarn) ? 'warn' : '')
-      : (hfBad ? 'danger' : hfWarn ? 'warn' : '');
+    const lvl = ((dropRatio != null && dropRatio < 0.10) || hfBad)
+      ? 'danger'
+      : (((dropRatio != null && dropRatio < 0.40) || hfWarn) ? 'warn' : '');
     if(lvl === 'danger'){ hasDanger = true; dangerList.push(l); }
     else if(lvl === 'warn') hasWarn = true;
     const distTxt = dropRatio == null ? '' : dropRatio > 0
@@ -2486,10 +2615,14 @@ function renderLiqAlert(){
     statusTxt = '▲ Alerta crítico';
     msgTxt = 'Atenção: uma ou mais posições estão próximas do preço de liquidação!';
     triggerDangerAlert(dangerList);
-  }else if(hasWarn){
-    bannerLvl = 'warn';
-    statusTxt = '◆ Atenção';
-    msgTxt = 'Monitoramento: posição com margem moderada até a liquidação.';
+  }else{
+    LAST_ALERT_SIG = ''; LAST_ALERT_TS = 0;
+    dismissAlertPopup('hf');
+    if(hasWarn){
+      bannerLvl = 'warn';
+      statusTxt = '◆ Atenção';
+      msgTxt = 'Monitoramento: posição com margem moderada até a liquidação.';
+    }
   }
 
   box.className = `liq-alert ${bannerLvl}`;
@@ -2895,7 +3028,12 @@ function renderAll(){
   if(dScan){ dScan.open = !!window.SCAN_OPEN; dScan.ontoggle = ()=>{ window.SCAN_OPEN = dScan.open; }; }
   const tglSmall = $('#toggleSmallHold');
   if(tglSmall) tglSmall.onclick = ()=>{ HIDE_SMALL_WALLET = !HIDE_SMALL_WALLET; renderAll(); };
-  cards.forEach((c,i)=>setupSim(c,i));
+  SUPPRESS_LIQ_RENDER = true;
+  try{
+    cards.forEach((c,i)=>setupSim(c,i));
+  }finally{
+    SUPPRESS_LIQ_RENDER = false;
+  }
   updateTiles();
   loadBtc(false);
   renderWallets();
