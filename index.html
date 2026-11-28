@@ -134,20 +134,29 @@ th:first-child,td:first-child{text-align:left}
 .liq-status-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--good);color:var(--good);background:rgba(34,197,94,.14)}
 .liq-alert.warn .liq-status-pill{border-color:var(--warn);color:var(--warn);background:rgba(234,179,8,.18)}
 .liq-alert.danger .liq-status-pill{border-color:var(--bad);color:var(--bad);background:rgba(239,68,68,.20)}
-.move-alert{margin:10px 0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--accent);background:var(--panel);display:flex;flex-direction:column;gap:6px;font-size:13px}
+.move-alert{margin:10px 0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--panel);display:flex;flex-direction:column;gap:8px;font-size:13px}
+.move-alert.has-alerts{border-color:var(--accent)}
 .move-alert[hidden]{display:none}
-.mv-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.mv-clear{padding:4px 10px;font-size:12px;border-radius:8px}
-.mv{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;padding:7px 0 2px;border-top:1px solid var(--border)}
+.mv-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.mv-title-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.mv-count{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:999px;font:700 11px/1.2 var(--mono);background:var(--panel-2);border:1px solid var(--border);color:var(--text-2)}
+.move-alert.has-alerts .mv-count{border-color:var(--accent);color:var(--accent);background:var(--ghost-on)}
+.mv-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mv-btn{padding:5px 10px;font-size:12px;border-radius:8px;display:inline-flex;align-items:center;gap:5px}
+.mv-list{display:flex;flex-direction:column;max-height:260px;overflow-y:auto;padding-right:2px}
+.mv{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;padding:7px 0;border-top:1px solid var(--border)}
 .mv-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
 .mv.in .mv-tag{color:var(--good)}
 .mv.out .mv-tag{color:var(--bad)}
+.mv.hf .mv-tag{color:var(--bad);background:rgba(239,68,68,.12)}
 .mv-main{font-variant-numeric:tabular-nums}
 .mv-usd{color:var(--muted);font-variant-numeric:tabular-nums}
 .mv-meta{color:var(--muted);font-size:12px;margin-left:auto}
+.mv-del{background:transparent;border:0;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1;border-radius:6px;cursor:pointer}
+.mv-del:hover{color:var(--bad);background:var(--hover-bg)}
+.mv-empty{color:var(--muted);font-size:12px;padding:8px 0 4px;border-top:1px solid var(--border)}
 .mv-status{color:var(--muted);font-size:12px;min-height:17px}
-.move-alert.idle{border:0;background:none;padding:0;margin:4px 0 0;gap:0}
-.mv-idle{color:var(--muted);font-size:12px;height:17px;line-height:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.move-alert.collapsed{padding:8px 12px;gap:4px}
 /* Estabilidade do topo: nada aqui muda de largura/altura quando o conteúdo é atualizado */
 #lastUpdate{display:inline-block;width:20em;max-width:100%;height:17px;line-height:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;vertical-align:middle}
 .wchip .wv{display:inline-block;min-width:6.5em;text-align:right;white-space:nowrap}
@@ -294,7 +303,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + Kamino + carteira</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.2.3</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.2.4</span>
       <label for="autoRefreshSel" class="sr-only">Intervalo de atualização automática</label>
       <select class="hdr-sel" id="autoRefreshSel" title="Atualização automática das posições">
         <option value="0">Auto: Manual</option>
@@ -413,6 +422,8 @@ const sameAddr = (a,b) => (isSolAddr(a) || isSolAddr(b)) ? String(a||'').trim() 
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${cid===SOL_CID ? String(addr) : String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v2.2.4  Adiciona campo de Avisos Salvos (armazenando todos os avisos de HF/liquidação e movimentação)
+           com botão para Ocultar e Visualizar os avisos.
    v2.2.3  Pop-up de aviso permanece aberto na tela até que o usuário clique no botão (×) para fechar.
    v2.2.2  Corrige pop-ups de alerta de HF/liquidação e de movimentação na carteira para dispararem
            repetidamente sem precisar atualizar a página com F5 (tag única, pop-up na tela e RPC em tempo real).
@@ -443,7 +454,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${c
    v2.0.0  Pacote de melhorias: limpa marcações residuais do HTML, adiciona
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v2.2.3';
+const APP_VERSION = 'v2.2.4';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -577,6 +588,38 @@ function playAlertTone(){
     osc.start(); osc.stop(ctx.currentTime + 0.36);
   }catch(_e){}
 }
+const SAVED_ALERTS_KEY = 'monitor_defi_saved_alerts';
+const ALERTS_VIS_KEY = 'monitor_defi_alerts_vis';
+let SAVED_ALERTS = [];
+let ALERTS_VISIBLE = true;
+try{
+  const rawAlerts = JSON.parse(localStorage.getItem(SAVED_ALERTS_KEY) || '[]');
+  if(Array.isArray(rawAlerts)) SAVED_ALERTS = rawAlerts.slice(0, 100);
+  const visPref = localStorage.getItem(ALERTS_VIS_KEY);
+  if(visPref === '0') ALERTS_VISIBLE = false;
+}catch(_e){}
+
+function persistSavedAlerts(){
+  try{ localStorage.setItem(SAVED_ALERTS_KEY, JSON.stringify(SAVED_ALERTS)); }catch(_e){}
+}
+function setAlertsVisible(vis){
+  ALERTS_VISIBLE = !!vis;
+  try{ localStorage.setItem(ALERTS_VIS_KEY, ALERTS_VISIBLE ? '1' : '0'); }catch(_e){}
+  renderMoves();
+}
+function addSavedAlerts(items){
+  if(!Array.isArray(items) || !items.length) return;
+  const now = Date.now();
+  const mapped = items.map((it, idx) => ({
+    id: `${now}-${idx}-${Math.random().toString(36).slice(2,7)}`,
+    ts: it.ts || now,
+    ...it
+  }));
+  SAVED_ALERTS = mapped.concat(SAVED_ALERTS).slice(0, 100);
+  persistSavedAlerts();
+  renderMoves();
+}
+
 function triggerDangerAlert(liqs){
   if(!liqs.length) return;
   const sig = liqs.map(l=>`${l.label}:${l.v?l.v.toFixed(0):'hf'}:${l.hf!=null&&isFinite(l.hf)?l.hf.toFixed(2):''}:${l.dropRatio!=null?l.dropRatio.toFixed(3):''}`).join('|');
@@ -584,6 +627,12 @@ function triggerDangerAlert(liqs){
   if(sig === LAST_ALERT_SIG && now - LAST_ALERT_TS < 60000) return;
   LAST_ALERT_SIG = sig; LAST_ALERT_TS = now;
   const lines = liqs.slice(0, 3).map(l => `${l.label}${l.v ? ` · Liquidação em ${l.asset||'BTC'} ${fmtUsd(l.v,2)}` : ''}${l.hf != null && isFinite(l.hf) ? ` · HF ${hfTxt(l.hf)}` : ''}`);
+  addSavedAlerts(liqs.map(l => ({
+    dir: 'hf',
+    label: l.label,
+    text: `${l.label}${l.v ? ` · Liquidação em ${l.asset||'BTC'} ${fmtUsd(l.v,2)}` : ''}${l.hf != null && isFinite(l.hf) ? ` · HF ${hfTxt(l.hf)}` : ''}${l.dropRatio != null && l.dropRatio > 0 ? ` (-${fmtPct(l.dropRatio,1)})` : ''}`,
+    ts: now
+  })));
   showAlertPopup('hf', '▲ Alerta Crítico de HF / Liquidação', lines);
   if(!NOTIF_ON) return;
   playAlertTone();
@@ -684,7 +733,7 @@ const moveTxt = e => `${e.dir === 'in' ? '+' : '-'}${fmtNum(e.amt,4)} ${e.sym} (
 function notifyMoves(events){
   const now = Date.now();
   MOVES = events.map(e => ({...e, ts:now})).concat(MOVES).slice(0, 30);
-  renderMoves();
+  addSavedAlerts(events.map(e => ({...e, ts:now})));
   const ins = events.filter(e => e.dir === 'in').length, outs = events.length - ins;
   const title = outs === 0 ? 'Monitor DeFi · Entrada na carteira' : ins === 0 ? 'Monitor DeFi · Saída da carteira' : 'Monitor DeFi · Movimentação na carteira';
   const line = e => PRIVACY ? `${wName(e.addr)} · ${e.dir === 'in' ? 'entrada' : 'saída'} de ${e.sym}` : `${wName(e.addr)} · ${moveTxt(e)} ≈ ${fmtUsd(e.usd,2)}`;
@@ -697,31 +746,66 @@ function notifyMoves(events){
 }
 function renderMoves(){
   const el = $('#moveAlert'); if(!el) return;
-  if(!MOVES.length && !WALLETS.length){ el.hidden = true; el.innerHTML = ''; return; }
   el.hidden = false;
-  const hm = ts => new Date(ts).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  const rows = MOVES.map(m =>
-    `<div class="mv ${m.dir}"><span class="mv-tag">${m.dir === 'in' ? '↓ Entrada' : '↑ Saída'}</span>`
-    + `<span class="mv-main priv"><b>${esc(moveTxt(m))}</b></span><span class="mv-usd priv">≈ ${fmtUsd(m.usd,2)}</span>`
-    + `<span class="mv-meta">${wNameH(m.addr)} · ${hm(m.ts)}</span></div>`).join('');
-  // Sempre 2 linhas de status (uma linha cada): o painel só cresce quando chega uma movimentação de verdade.
+  const hm = ts => new Date(ts).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+  const hmShort = ts => new Date(ts).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  const total = SAVED_ALERTS.length;
+  el.classList.toggle('has-alerts', total > 0);
+  el.classList.toggle('collapsed', !ALERTS_VISIBLE);
   const n = MOVE_INFO ? MOVE_INFO.n : 0, ativos = `${n} ${n === 1 ? 'ativo' : 'ativos'}`;
-  const st = !MOVE_INFO ? 'Aguardando a primeira leitura…'
-    : MOVE_INFO.first && !MOVES.length ? `${ativos} · base registrada às ${hm(MOVE_INFO.ts)}`
-    : `${ativos} · verificado às ${hm(MOVE_INFO.ts)}${MOVES.length ? '' : ' · sem movimentações'}`;
-  const tip = AUTO_MIN === 0 ? 'Escolha 1 ou 5 min em “Auto” para verificar sozinho.'
-    : !NOTIF_ON ? 'Ligue “Alertas” para ter som e notificação.'
-    : `Avisa entradas e saídas acima de US$ ${MOVE_MIN_USD}.`;
-  const idle = !MOVES.length;
-  el.classList.toggle('idle', idle);
-  if(idle){
-    const brief = AUTO_MIN === 0 ? 'Monitor de entradas/saídas parado: ative “Auto” (1 ou 5 min)' : `${st}${NOTIF_ON ? '' : ' · Alertas desligado'}`;
-    el.innerHTML = `<div class="mv-idle" title="${esc(st + ' · ' + tip)}">${esc(brief)}</div>`;
-    return;
-  }
-  el.innerHTML = `<div class="mv-head"><b>Movimentações na carteira</b><button type="button" class="ghost mv-clear" id="mvClear"${MOVES.length ? '' : ' style="visibility:hidden" tabindex="-1" aria-hidden="true"'}>Limpar</button></div>`
-    + rows + `<div class="mv-status">${st}</div><div class="mv-status">${tip}</div>`;
-  const b = $('#mvClear'); if(b) b.onclick = () => { MOVES = []; renderMoves(); };
+  const st = !MOVE_INFO ? (WALLETS.length ? 'Aguardando leitura…' : 'Nenhuma carteira carregada')
+    : MOVE_INFO.first && !total ? `${ativos} · base registrada às ${hmShort(MOVE_INFO.ts)}`
+    : `${ativos} · verificado às ${hmShort(MOVE_INFO.ts)}`;
+  const tip = AUTO_MIN === 0 ? 'Escolha 1 ou 5 min em “Auto” para monitorar sozinho.'
+    : !NOTIF_ON ? 'Ligue “Alertas” para som e notificação.'
+    : `Salva alertas de HF/liquidação e movimentações acima de US$ ${MOVE_MIN_USD}.`;
+  const eyeIcon = ALERTS_VISIBLE
+    ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>'
+    : '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const toggleLbl = ALERTS_VISIBLE ? 'Ocultar avisos' : `Visualizar avisos (${total})`;
+
+  const rows = SAVED_ALERTS.map(m => {
+    if(m.dir === 'hf'){
+      return `<div class="mv hf"><span class="mv-tag">▲ HF / Liquidação</span>`
+        + `<span class="mv-main priv"><b>${esc(m.text || m.label || 'Alerta crítico')}</b></span>`
+        + `<span class="mv-meta">${hm(m.ts)}</span>`
+        + `<button type="button" class="mv-del" data-id="${esc(m.id)}" title="Remover este aviso" aria-label="Remover aviso">×</button></div>`;
+    }
+    return `<div class="mv ${m.dir === 'in' ? 'in' : 'out'}"><span class="mv-tag">${m.dir === 'in' ? '↓ Entrada' : '↑ Saída'}</span>`
+      + `<span class="mv-main priv"><b>${esc(moveTxt(m))}</b></span><span class="mv-usd priv">≈ ${fmtUsd(m.usd,2)}</span>`
+      + `<span class="mv-meta">${m.addr ? wNameH(m.addr) + ' · ' : ''}${hm(m.ts)}</span>`
+      + `<button type="button" class="mv-del" data-id="${esc(m.id)}" title="Remover este aviso" aria-label="Remover aviso">×</button></div>`;
+  }).join('');
+
+  const listHtml = !ALERTS_VISIBLE ? ''
+    : (total
+        ? `<div class="mv-list">${rows}</div><div class="mv-status">${esc(st)} · ${esc(tip)}</div>`
+        : `<div class="mv-empty">Nenhum aviso salvo até o momento. (${esc(st)} · ${esc(tip)})</div>`);
+
+  el.innerHTML = `<div class="mv-head">
+      <div class="mv-title-wrap">
+        <b>Histórico de Avisos</b>
+        <span class="mv-count">${total} ${total === 1 ? 'salvo' : 'salvos'}</span>
+        ${!ALERTS_VISIBLE ? `<span class="hint">${esc(st)}</span>` : ''}
+      </div>
+      <div class="mv-actions">
+        <button type="button" class="ghost mv-btn ${!ALERTS_VISIBLE && total ? 'on' : ''}" id="mvToggleVis" aria-expanded="${ALERTS_VISIBLE}">${eyeIcon} ${esc(toggleLbl)}</button>
+        ${ALERTS_VISIBLE && total ? `<button type="button" class="ghost mv-btn" id="mvClear" title="Apagar todos os avisos salvos">Limpar tudo</button>` : ''}
+      </div>
+    </div>${listHtml}`;
+
+  const tBtn = $('#mvToggleVis');
+  if(tBtn) tBtn.onclick = () => setAlertsVisible(!ALERTS_VISIBLE);
+  const cBtn = $('#mvClear');
+  if(cBtn) cBtn.onclick = () => { SAVED_ALERTS = []; MOVES = []; persistSavedAlerts(); renderMoves(); };
+  el.querySelectorAll('.mv-del').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      SAVED_ALERTS = SAVED_ALERTS.filter(x => x.id !== id);
+      persistSavedAlerts();
+      renderMoves();
+    };
+  });
 }
 
 let PROTO_STATUS = {aave:null, morpho:null, venus:null, kamino:null};
