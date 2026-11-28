@@ -294,7 +294,7 @@ input:focus-visible,select:focus-visible{outline-offset:0;border-color:var(--acc
       <h1 class="brand-title">Monitor DeFi<br><small>Aave + Morpho + Venus + Kamino + carteira</small></h1>
     </div>
     <div class="hdr-right">
-      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.2.2</span>
+      <span class="ver-badge" id="appVersion" title="Versão atual da aplicação">v2.2.3</span>
       <label for="autoRefreshSel" class="sr-only">Intervalo de atualização automática</label>
       <select class="hdr-sel" id="autoRefreshSel" title="Atualização automática das posições">
         <option value="0">Auto: Manual</option>
@@ -413,6 +413,7 @@ const sameAddr = (a,b) => (isSolAddr(a) || isSolAddr(b)) ? String(a||'').trim() 
 const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${cid===SOL_CID ? String(addr) : String(addr).toLowerCase()}` : null;
 
 /* ---------------------------------------------------------------------------
+   v2.2.3  Pop-up de aviso permanece aberto na tela até que o usuário clique no botão (×) para fechar.
    v2.2.2  Corrige pop-ups de alerta de HF/liquidação e de movimentação na carteira para dispararem
            repetidamente sem precisar atualizar a página com F5 (tag única, pop-up na tela e RPC em tempo real).
    v2.2.1  Cabeçalho com botões alinhados ao título, ajuste no texto de doação e linha do Dólar simplificada.
@@ -442,7 +443,7 @@ const pcoin = (cid, addr) => LLAMA_CHAIN[cid] && addr ? `${LLAMA_CHAIN[cid]}:${c
    v2.0.0  Pacote de melhorias: limpa marcações residuais do HTML, adiciona
    v1.1.1  Versão base recebida para revisão.
    --------------------------------------------------------------------------- */
-const APP_VERSION = 'v2.2.2';
+const APP_VERSION = 'v2.2.3';
 function syncVersionBadge(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
@@ -503,7 +504,6 @@ function ensureAudioCtx(){
 document.addEventListener('click', () => { if(NOTIF_ON) ensureAudioCtx(); }, {passive:true});
 
 function dismissAlertPopup(kind){
-  if(ACTIVE_POPUP_TIMERS[kind]){ clearTimeout(ACTIVE_POPUP_TIMERS[kind]); delete ACTIVE_POPUP_TIMERS[kind]; }
   const host = document.getElementById('popupToastHost');
   const old = host?.querySelector(`.popup-toast[data-kind="${kind}"]`);
   if(old) old.remove();
@@ -522,7 +522,6 @@ function showAlertPopup(kind, title, lines){
   const closeBtn = box.querySelector('.popup-close');
   if(closeBtn) closeBtn.onclick = () => dismissAlertPopup(kind);
   host.appendChild(box);
-  ACTIVE_POPUP_TIMERS[kind] = setTimeout(() => dismissAlertPopup(kind), 12000);
 }
 
 function sendBrowserNotif(kind, title, body){
@@ -533,7 +532,7 @@ function sendBrowserNotif(kind, title, body){
       delete ACTIVE_OS_NOTIFS[kind];
     }
     const tag = `monitor-defi-${kind}-${Date.now()}-${++NOTIF_SEQ}`;
-    const n = new Notification(title, {body, tag});
+    const n = new Notification(title, {body, tag, requireInteraction:true});
     ACTIVE_OS_NOTIFS[kind] = n;
     n.onclick = () => { try{ window.focus(); n.close(); }catch(_e){} };
   }catch(_e){}
@@ -2572,7 +2571,6 @@ function renderLiqAlert(){
   syncSimAssetFromLiq(liqs);
   if(!liqs.length){
     LAST_ALERT_SIG = ''; LAST_ALERT_TS = 0;
-    dismissAlertPopup('hf');
     box.className = 'liq-alert';
     box.innerHTML = `<div class="liq-alert-head">
       <div class="row"><span class="liq-status-pill">● Monitoramento ativo</span><b>Alertas de Liquidação (Aave, Morpho, Venus, Kamino)</b></div>
@@ -2617,7 +2615,6 @@ function renderLiqAlert(){
     triggerDangerAlert(dangerList);
   }else{
     LAST_ALERT_SIG = ''; LAST_ALERT_TS = 0;
-    dismissAlertPopup('hf');
     if(hasWarn){
       bannerLvl = 'warn';
       statusTxt = '◆ Atenção';
